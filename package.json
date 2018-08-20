@@ -1,0 +1,24 @@
+{
+  "name": "video-streamer-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "tsc && node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisharrington/video-streamer-server.git"
+  },
+  "author": "Chris Harrington",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chrisharrington/video-streamer-server/issues"
+  },
+  "homepage": "https://github.com/chrisharrington/video-streamer-server#readme",
+  "dependencies": {
+    "@types/node": "^10.7.1",
+    "express": "^4.16.3",
+    "module-alias": "^2.1.0"
+  }
+}
