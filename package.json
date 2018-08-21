@@ -19,6 +19,12 @@
   "dependencies": {
     "@types/node": "^10.7.1",
     "express": "^4.16.3",
-    "module-alias": "^2.1.0"
+    "install": "^0.12.1",
+    "module-alias": "^2.1.0",
+    "npm": "^6.4.0",
+    "recursive-readdir": "^2.2.2"
+  },
+  "_moduleAliases": {
+    "@root": "."
   }
 }
