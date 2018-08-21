@@ -5,7 +5,7 @@ import * as express from 'express';
 const app = express();
 
 app.get('/video', function(req, res) {
-    const path = '\\\\bravo\\Media\\Kid\'s Movies\\Ballerina (2016)\\Ballerina (2016).mkv'
+    const path = 'sample.mp4'
     const stat = fs.statSync(path)
     const fileSize = stat.size
     const range = req.headers.range
@@ -35,4 +35,4 @@ app.get('/video', function(req, res) {
     }
 });
 
-app.listen(3000, () => console.log('Listening on port 3000...'));
+app.listen(9999, () => console.log('Listening on port 9999...'));
