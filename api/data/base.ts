@@ -8,6 +8,7 @@ export class Base<TModel> {
 
     constructor(collection: string) {
         this.connectionString = Config.databaseConnectionString;
+        this.collection = collection;
     }
 
     protected async connect() : Promise<mongo.Collection> {
