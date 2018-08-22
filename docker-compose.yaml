@@ -1,0 +1,13 @@
+version: '3'
+services:
+  queue:
+    image: rabbitmq
+    ports:
+      - '5672:5672'
+    container_name: video-streamer-queue
+  data:
+    image: 'mongo'
+    container_name: video-streamer-database
+    ports:
+      - '27017:27017'
+    

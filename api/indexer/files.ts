@@ -16,7 +16,7 @@ export class Files extends Async {
             if (error)
                 return p.reject(error);
 
-            //files = files.filter(file => extensions.indexOf(path.extname(file)) > -1);
+            files = files.filter(file => extensions.indexOf(path.extname(file).substring(1)) > -1);
             p.resolve(files);
         });
 

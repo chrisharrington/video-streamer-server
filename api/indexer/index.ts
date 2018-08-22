@@ -22,6 +22,14 @@ export class Indexer extends Async {
             return await this.fileManager.find(library, extensions);
         })));
 
+        files.forEach(async (file: IFile) => await this.add(file));
+
         return files.length;
+    }
+
+    async add(file: IFile) {
+        // add to database
+        // get metadata
+        //   update database
     }
 }
