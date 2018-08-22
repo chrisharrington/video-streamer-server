@@ -1,8 +1,8 @@
 export class Media {
     id: string;
+    path: string;
     name: string;
     poster: string;
-    path: string;
     synopsis: string;
     year: number;
 }

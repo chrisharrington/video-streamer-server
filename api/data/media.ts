@@ -1,5 +1,14 @@
 import { Base } from './base';
+import { Media } from '@root/models/media';
 
-export class Media extends Base {
-    get() : Promise<
+class MediaService extends Base<Media> {
+    constructor() {
+        super('media');
+    }
+
+    get() : Promise<Media[]> {
+        return Promise.resolve([]);
+    }
 }
+
+export default new MediaService();
