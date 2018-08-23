@@ -1,29 +1,38 @@
 import { Base } from './base';
-import { Media } from '@root/models';
+import { Movie } from '@root/models';
 
-class MediaService extends Base<Media> {
+class MediaService extends Base<Movie> {
     constructor() {
-        super('media');
+        super('movies');
     }
 
-    get() : Promise<Media[]> {
+    get() : Promise<Movie[]> {
         return Promise.resolve([]);
     }
 
-    async load(media: Media[]) {
+    async load(movies: Movie[]) : Promise<Movie[]> {
         let collection = await this.connect();
-        return new Promise((resolve, reject) => {
-            collection.bulkWrite(media.map(m => {
+        return new Promise<Movie[]>((resolve, reject) => {
+            collection.bulkWrite(movies.map(m => {
                 return {
                     updateOne: {
                         filter: { path: m.path },
-                        update: { $set: { id: m.id, path: m.path } },
+                        update: { $set: m },
                         upsert: true
                     }
                 }
             }), (error, result) => {
-                if (error) reject(error);
-                else resolve();
+                if (error) return reject(error);
+
+                let keys = Object.keys(result.upsertedIds).map(key => result.upsertedIds[key]);
+                collection.find({
+                    '_id': {
+                        $in: Object.keys(result.upsertedIds).map(key => result.upsertedIds[key])
+                    }
+                }).toArray((e, docs) => {
+                    if (e) reject(e);
+                    else resolve(docs as Movie[]);
+                });
             });
         });
     }

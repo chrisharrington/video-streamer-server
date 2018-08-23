@@ -27,14 +27,14 @@ export class MovieIndexer extends Async {
             return await this.fileManager.find(library, extensions);
         })));
 
-        await MovieService.load(files.map(file => Media.fromFile(file)));
+        let movies = await MovieService.load(files.map(file => Media.fromFile(file)));
 
-        files.forEach((file: File) => Metadata.queue(file));
+        movies.forEach((movie: Movie) => Metadata.movie(movie));
 
         return files.length;
     }
 
-    private async onMessage(model: Movie) {
-        await MovieService.
+    private async onMessage(movie: Movie) {
+        console.log(movie);
     }
 }

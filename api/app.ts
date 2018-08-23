@@ -1,6 +1,6 @@
 import 'module-alias/register';
 
-import { MovieIndexer } from '@root/indexer';
+import { MovieIndexer } from '@root/indexer/movie';
 
 // Server:
 // initialize web server

@@ -2,6 +2,7 @@ import * as mongo from 'mongodb';
 
 import Config from '@root/config';
 import { Id } from '@root/models';
+import { callbackify } from 'util';
 
 export class Base<TModel> {
     private connectionString: string;
@@ -43,7 +44,10 @@ export class Base<TModel> {
             collection.updateOne({
                 id: model.id
             }, {
-                
+                $set: model
+            }, (error) => {
+                if (error) reject(error);
+                else resolve();
             })
         });
     }

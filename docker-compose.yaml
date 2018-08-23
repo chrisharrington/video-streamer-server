@@ -1,9 +1,10 @@
 version: '3'
 services:
   queue:
-    image: rabbitmq
+    image: rabbitmq:3-management
     ports:
       - '5672:5672'
+      - '15672:15672'
     container_name: video-streamer-queue
   data:
     image: 'mongo'
