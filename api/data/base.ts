@@ -22,11 +22,16 @@ export class Base<TModel> {
         });
     }
 
-    public async find(query: any) : Promise<TModel | null> {
+    public async findOne(query: any) : Promise<TModel | null> {
+        let result = await this.find(query);
+        return result[0];
+    }
+
+    public async find(query: any) : Promise<TModel[]> {
         let collection = await this.connect();
 
-        return new Promise<TModel | null>((resolve, reject) => {
-            collection.findOne(query, (error, result) => {
+        return new Promise<TModel[]>((resolve, reject) => {
+            collection.find(query).toArray((error, result) => {
                 if (error) reject(error);
                 else resolve(result);
             });
@@ -41,10 +46,15 @@ export class Base<TModel> {
         let collection = await this.connect();
 
         return new Promise<void>((resolve, reject) => {
+            let update = {};
+            Object.keys(model).forEach(key => {
+                if (key !== '_id')
+                    update[key] = model[key];
+            });
             collection.updateOne({
-                id: model.id
+                _id: model._id
             }, {
-                $set: model
+                $set: update
             }, (error) => {
                 if (error) reject(error);
                 else resolve();

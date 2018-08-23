@@ -6,8 +6,14 @@ class MediaService extends Base<Movie> {
         super('movies');
     }
 
-    get() : Promise<Movie[]> {
-        return Promise.resolve([]);
+    async get() : Promise<Movie[]> {
+        let collection = await this.connect();
+        return new Promise<Movie[]>((resolve, reject) => {
+            collection.find({}).toArray((error, movies) => {
+                if (error) reject(error);
+                else resolve(movies);
+            });
+        });
     }
 
     async load(movies: Movie[]) : Promise<Movie[]> {

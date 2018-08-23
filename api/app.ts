@@ -1,5 +1,7 @@
 import 'module-alias/register';
 
+import Config from '@root/config';
+import Server from '@root/server/server';
 import { MovieIndexer } from '@root/indexer/movie';
 
 // Server:
@@ -14,25 +16,26 @@ import { MovieIndexer } from '@root/indexer/movie';
 //  grab metadata
 //  save to database
 
+Server.initialize(Config.serverPort);
+
 const mediaLibrary: string = '\\\\bravo\\Media\\Movies';
 let indexer = new MovieIndexer([mediaLibrary]);
-indexer.run().then(count => {
-    console.log(`Indexing finished: ${count} file${count === 1 ? '' : 's'}.`);
-}).catch(e => {
+indexer.run().catch(e => {
     console.error(e);
 });
 
 
 
+// import * as fs from 'fs';
 // import * as express from 'express';
 
 // const app = express();
 
 // app.get('/video', function(req, res) {
-//     const path = 'sample.mp4'
+//     const path = '\\\\bravo\\media\\Kid\'s Movies\\Ballerina (2016)\\Ballerina (2016).mkv'
 //     const stat = fs.statSync(path)
 //     const fileSize = stat.size
-//     const range = req.headers.range
+//     const range = req.headers.range as string;
 //     if (range) {
 //         const parts = range.replace(/bytes=/, "").split("-")
 //         const start = parseInt(parts[0], 10)
