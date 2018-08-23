@@ -1,6 +1,6 @@
 import 'module-alias/register';
 
-import { Indexer } from '@root/indexer';
+import { MovieIndexer } from '@root/indexer';
 
 // Server:
 // initialize web server
@@ -14,8 +14,8 @@ import { Indexer } from '@root/indexer';
 //  grab metadata
 //  save to database
 
-const mediaLibrary: string = '\\\\bravo\\Media';
-let indexer = new Indexer([mediaLibrary]);
+const mediaLibrary: string = '\\\\bravo\\Media\\Movies';
+let indexer = new MovieIndexer([mediaLibrary]);
 indexer.run().then(count => {
     console.log(`Indexing finished: ${count} file${count === 1 ? '' : 's'}.`);
 }).catch(e => {

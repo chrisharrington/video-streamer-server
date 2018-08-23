@@ -1,6 +1,7 @@
 import * as mongo from 'mongodb';
 
 import Config from '@root/config';
+import { Id } from '@root/models';
 
 export class Base<TModel> {
     private connectionString: string;
@@ -20,13 +21,38 @@ export class Base<TModel> {
         });
     }
 
-    public async add<TModel>(model: TModel) : Promise<void> {
+    public async find(query: any) : Promise<TModel | null> {
+        let collection = await this.connect();
+
+        return new Promise<TModel | null>((resolve, reject) => {
+            collection.findOne(query, (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+        });
+    }
+
+    public async insertOne(model: TModel) : Promise<void> {
+        return await this.insertMany([model]);
+    }
+
+    public async updateOne(model: Id) : Promise<void> {
         let collection = await this.connect();
 
         return new Promise<void>((resolve, reject) => {
-            collection.insert(model, (error, result) => {
-                let blah = result;
-                console.log(blah);
+            collection.updateOne({
+                id: model.id
+            }, {
+                
+            })
+        });
+    }
+
+    public async insertMany(models: TModel[]) : Promise<void> {
+        let collection = await this.connect();
+
+        return new Promise<void>((resolve, reject) => {
+            collection.insertMany(models, (error, result) => {
                 if (error) reject(error);
                 else resolve();
             });
