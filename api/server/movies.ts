@@ -7,8 +7,8 @@ export default class Movies {
     app: any;
 
     static initialize(app) {
-        app.get('/movies', this.getMovies.bind(this));
-        app.get('/play-movie/:year/:name', this.playMovie.bind(this));
+        app.get('/movies/all', this.getMovies.bind(this));
+        app.get('/movies/play/:year/:name', this.playMovie.bind(this));
     }
 
     private static async getMovies(request, response) {
@@ -39,7 +39,7 @@ export default class Movies {
                 return;
             }
 
-            //movie.path = '\\\\bravo\\media\\Kid\'s Movies\\Ballerina (2016)\\Ballerina (2016).mkv';
+            movie.path = '\\\\bravo\\media\\Kid\'s Movies\\Ballerina (2016)\\Ballerina (2016).mkv';
 
             const stat = fs.statSync(movie.path)
             if (request.headers.range) {
