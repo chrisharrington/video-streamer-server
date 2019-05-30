@@ -1,7 +1,6 @@
 import * as amqp from 'amqplib';
 
 import Config from '@root/config';
-import { createConnection } from 'net';
 
 class Queue {
     async send(queue: string, message: any) {

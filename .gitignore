@@ -62,3 +62,6 @@ typings/
 
 *.js
 *.js.map
+
+# Video files
+*.mkv
