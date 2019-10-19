@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as fs from 'fs';
+import * as path from 'path';
 import * as ffmpeg from 'fluent-ffmpeg';
 
 import MovieService from '@root/data/movie';
@@ -9,6 +10,7 @@ export default class Movies {
 
     static initialize(app) {
         app.get('/movies/all', this.getMovies.bind(this));
+        app.get('/movies/strem/:year/:name', this.streamMovie.bind(this));
         app.get('/movies/play/:year/:name', this.playMovie.bind(this));
     }
 
@@ -25,21 +27,51 @@ export default class Movies {
         }
     }
 
-    // localhost:8101/play-movie/1988/Die Hard
+    private static async playMovie(request: express.Request, response: express.Response) {
+        const path = '\\\\bravo\\home\\media\\movies\\Chef (2014)\\Chef (2014) Bluray-1080p.mkv';
 
-    private static async playMovie(request, response) {
+        const stat = fs.statSync(path),
+            fileSize = stat.size,
+            range = request.headers.range;
+
+        if (range) {
+            const parts = range.replace(/bytes=/, "").split("-");
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
+            response.writeHead(206, {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': (end-start)+1,
+                'Content-Type': 'video/mp4',
+            });
+            fs.createReadStream(path, {start, end}).pipe(response);
+        } else {
+            response.writeHead(200, {
+                'Content-Length': fileSize,
+                'Content-Type': 'video/mp4',
+            });
+            fs.createReadStream(path).pipe(response);
+        }
+    }
+
+    private static async streamMovie(request, response) {
         const name = request.params.name,
             year = request.params.year;
+
+        response.contentType('video/mp4');
 
         console.log(`[server] Request received: GET /play-movie/${year}/${name}`);
 
         try {
-            ffmpeg(`c:\\users\\chris\\Code\\video-streamer-server\\${name}.mkv`)
-                .videoCodec('libx264')
-                .audioCodec('libmp3lame')
-                .outputOptions('-movflags frag_keyframe+empty_moov')
+            new ffmpeg({source: `c:\\users\\chris\\Code\\video-streamer-server\\big.mkv`})
                 .seekInput(1000)
-                .format('mp4')
+                .outputOptions('-movflags frag_keyframe+empty_moov')
+                .withVideoBitrate(1024)
+                .withVideoCodec('libx264')
+                .withAudioBitrate('128k')
+                .withAudioCodec('libmp3lame')
+                .toFormat('mp4')
+                .on('stderr', e => console.log(e))
                 .on('error', function(err, b, c) {
                     console.log('An error occurred.');
                     console.error(err);
@@ -48,7 +80,23 @@ export default class Movies {
                 .on('end', function() {
                     console.log('Processing finished !');
                 })
-                .pipe(response, { end: true });
+                .pipe(response);
+                
+            // ffmpeg(`c:\\users\\chris\\Code\\video-streamer-server\\big.mkv`)
+            //     .videoCodec('libx264')
+            //     .audioCodec('libmp3lame')
+            //     .outputOptions('-movflags frag_keyframe+empty_moov')
+            //     .seekInput(1000)
+            //     .format('mp4')
+            //     .on('error', function(err, b, c) {
+            //         console.log('An error occurred.');
+            //         console.error(err);
+            //         console.error(c);
+            //     })
+            //     .on('end', function() {
+            //         console.log('Processing finished !');
+            //     })
+            //     .pipe(response, { end: true });
 
             // let movie = await MovieService.findOne({ name });
             // if (!movie) {
