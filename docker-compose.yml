@@ -2,13 +2,27 @@ version: '3'
 services:
   queue:
     image: rabbitmq:3-management
+    container_name: video-streamer-queue
     ports:
       - '5672:5672'
       - '15672:15672'
-    container_name: video-streamer-queue
+    restart: unless-stopped
   data:
     image: 'mongo'
     container_name: video-streamer-database
+    restart: unless-stopped
     ports:
       - '27017:27017'
-    
+  api:
+    build: ./api/.
+    container_name: video-streamer-api
+    restart: unless-stopped
+    ports:
+      - 8101:8101
+      - 9229:9229
+    volumes:
+      - ~/media:/media
+      - ./api:/app
+    depends_on:
+      - queue
+      - data

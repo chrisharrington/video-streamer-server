@@ -1,8 +1,7 @@
-import * as mongo from 'mongodb';
+import { Collection, MongoClient, ObjectID, ObjectId } from 'mongodb';
 
 import Config from '@root/config';
 import { Id } from '@root/models';
-import { callbackify } from 'util';
 
 export class Base<TModel> {
     private connectionString: string;
@@ -13,13 +12,17 @@ export class Base<TModel> {
         this.collection = collection;
     }
 
-    protected async connect() : Promise<mongo.Collection> {
-        return new Promise<mongo.Collection>((resolve, reject) => {
-            mongo.MongoClient.connect(this.connectionString, (error, client) => {
+    protected async connect() : Promise<Collection> {
+        return new Promise<Collection>((resolve, reject) => {
+            MongoClient.connect(this.connectionString, { useUnifiedTopology:true }, (error, client) => {
                 if (error) reject(error);
-                else resolve(client.db('video-streamer-database').collection(this.collection));
+                else resolve(client.db('video-streamer').collection(this.collection));
             });
         });
+    }
+
+    public async findById(id: string) : Promise<TModel | null> {
+        return await this.findOne({ _id: new ObjectID(id) });
     }
 
     public async findOne(query: any) : Promise<TModel | null> {
@@ -38,8 +41,18 @@ export class Base<TModel> {
         });
     }
 
-    public async insertOne(model: TModel) : Promise<void> {
-        return await this.insertMany([model]);
+    public async insertOne(model: TModel) : Promise<TModel> {
+        let collection = await this.connect();
+
+        return new Promise<TModel>((resolve, reject) => {
+            collection.insertOne(model, (error, response) => {
+                if (error) reject(error);
+                else {
+                    (model as any)._id = new ObjectId(response.insertedId);
+                    resolve(model);
+                }
+            });
+        });
     }
 
     public async updateOne(model: Id) : Promise<void> {
@@ -52,24 +65,13 @@ export class Base<TModel> {
                     update[key] = model[key];
             });
             collection.updateOne({
-                _id: model._id
+                _id: new ObjectID(model._id)
             }, {
                 $set: update
             }, (error) => {
                 if (error) reject(error);
                 else resolve();
             })
-        });
-    }
-
-    public async insertMany(models: TModel[]) : Promise<void> {
-        let collection = await this.connect();
-
-        return new Promise<void>((resolve, reject) => {
-            collection.insertMany(models, (error, result) => {
-                if (error) reject(error);
-                else resolve();
-            });
         });
     }
 }

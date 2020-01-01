@@ -1,8 +1,8 @@
 class Config {
-    movieDatabaseApiKey: string = 'c26c67ed161834067f4d91430df1024e';
-    movieDatabaseApiUrl: string = 'https://api.themoviedb.org/3/';
-    databaseConnectionString: string = 'mongodb://localhost:27017';
-    queueConnectionString: string = 'amqp://localhost:5672';
+    metadataApiKey: string = 'c26c67ed161834067f4d91430df1024e';
+    metadataApiUrl: string = 'https://api.themoviedb.org/3/';
+    databaseConnectionString: string = 'mongodb://data:27017';
+    queueConnectionString: string = 'amqp://queue:5672';
 
     serverPort: number = 8101;
 }

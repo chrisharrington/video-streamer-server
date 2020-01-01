@@ -9,6 +9,14 @@ import Queue from '@root/queue';
 class Metadata {
     private queueName: string = 'movie-metadata';
     private errorQueueName: string = 'movie-metadata-error';
+    private configuration: Promise<void>;
+    private imageBaseUrl: string = null;
+
+    constructor() {
+        this.configuration = request(`${Config.metadataApiUrl}configuration?api_key=${Config.metadataApiKey}`, (error, _, body) => {
+            this.imageBaseUrl = JSON.parse(body).images.base_url;
+        });
+    }
 
     async enqueueMovie(movie: Movie) {
         await Queue.send(this.queueName, movie);
@@ -22,7 +30,9 @@ class Metadata {
                 await Queue.send(this.errorQueueName, movie);
             } else {
                 let metadata = await new Promise<any>((resolve, reject) => {
-                    request(this.buildSearchMovieUrl(movie), (error, response, body) => {
+                    const url = this.buildSearchMovieUrl(movie);
+                    console.log(`[movie-indexer] Finding metadata from ${url}.`);
+                    request(url, (error, _, body) => {
                         if (error) reject(error);
                         resolve(JSON.parse(body));
                     });
@@ -32,8 +42,9 @@ class Metadata {
                     console.log(`[movie-indexer] No metadata found. ${movie.path}`);
                     await Queue.send(this.errorQueueName, movie);
                 } else {
-                    let result = metadata.results[0];
-                    movie.poster = result.poster_path;
+                    await this.configuration;
+                    let result = metadata.results.find(m => m.title === movie.name) || metadata.results[0];
+                    movie.poster = `${this.imageBaseUrl}w342${result.poster_path}`;
                     movie.synopsis = result.overview;
                     onMessage(movie);
                 }
@@ -42,10 +53,8 @@ class Metadata {
     }
 
     private buildSearchMovieUrl(movie: Movie) : string {
-        return `${Config.movieDatabaseApiUrl}search/movie?api_key=${Config.movieDatabaseApiKey}&query=${movie.name}&year=${movie.year}`;
+        return `${Config.metadataApiUrl}search/movie?api_key=${Config.metadataApiKey}&query=${movie.name}&year=${movie.year}`;
     }
 }
 
 export default new Metadata();
-
-// https://api.themoviedb.org/3/search/movie?api_key=c26c67ed161834067f4d91430df1024e&query=21%20(2008)
