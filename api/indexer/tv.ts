@@ -51,14 +51,14 @@ export class TvIndexer {
 
     private async processFile(file: File) : Promise<void> {
         try {
-            let found: Episode = await EpisodeService.findOne({ seasons: { '$elemMatch': { episodes: { '$elemMatch': { path: file.path } } } } });
-            if (found)
-                return;
+            const tv = await TvFile.fromFile(file);
 
             console.log(`[tv-indexer] Processing ${file.path}.`);
+
+            if (await EpisodeService.findOne({ number: tv.episode, season: tv.season, show: tv.show }))
+                return;
             
-            const tv = await TvFile.fromFile(file),
-                show = await this.processShow(tv.show),
+            const show = await this.processShow(tv.show),
                 season = await this.processSeason(tv.season, show);
             await this.processEpisode(file, tv.episode, season, show);
         } catch (e) {

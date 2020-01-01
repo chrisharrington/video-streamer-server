@@ -65,3 +65,6 @@ typings/
 
 # Video files
 *.mkv
+
+# MongoDB database
+data/

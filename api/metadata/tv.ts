@@ -5,13 +5,9 @@ import Config from '@root/config';
 
 import { Show, Season, Episode } from '@root/models';
 
-class Metadata {
-    private configuration: Promise<any>;
+import Metadata from './base';
 
-    constructor() {
-        this.configuration = this.getConfiguration();
-    }
-
+class TvMetadata extends Metadata {
     async getShow(show: Show) : Promise<Show> {
         try {
             console.log(`[tv-metadata] Received TV show metadata message. ${show.name}.`);
@@ -22,7 +18,7 @@ class Metadata {
             show.externalId = search.id;
             show.year = dayjs(details.first_air_date, 'yyyy-mm-dd').year();
             show.synopsis = details.overview;
-            show.poster = `${(await this.configuration).images.base_url}w342${details.poster_path}`;
+            show.poster = `${(await this.configuration).base_url}w342${details.poster_path}`;
             return show;
         } catch (e) {
             console.log(`[tv-metadata] Error processing metadata for ${show.name}: ${e.toString()}`)
@@ -39,7 +35,7 @@ class Metadata {
             season.externalId = details.id;
             season.synopsis = details.overview;
             season.year = dayjs(details.air_date, 'yyyy-mm-dd').year();
-            season.poster = `${(await this.configuration).images.base_url}w342${details.poster_path}`;
+            season.poster = `${(await this.configuration).base_url}w342${details.poster_path}`;
             return season;
         } catch (e) {
             console.log(`[tv-metadata] Error processing metadata for ${season.show} / ${season.number}: ${e.toString()}`);
@@ -62,14 +58,6 @@ class Metadata {
             console.log(`[tv-metadata] Error processing metadata for ${season.show} / ${season.number} / ${episode.number}: ${e.toString()}`);
             console.error(e);
         }
-    }
-
-    private async getConfiguration() : Promise<any> {
-        const response = await fetch(`${Config.metadataApiUrl}configuration?api_key=${Config.metadataApiKey}`);
-        if (response.status !== 200)
-            throw new Error(`[tv-indexer] Invalid response from metadata API /configuration: ${response.status}`);
-        
-        return await response.json();
     }
 
     private async showSearch(name: string) : Promise<any> {
@@ -109,4 +97,4 @@ class Metadata {
     }
 }
 
-export default new Metadata();
+export default new TvMetadata();

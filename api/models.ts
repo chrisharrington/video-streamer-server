@@ -22,10 +22,12 @@ export class Media extends Id {
 }
 
 export class Movie extends Media {
+    externalId: string;
     name: string;
     poster: string;
     synopsis: string;
     year: number;
+    genres: string[];
 
     constructor(path: string) {
         super();

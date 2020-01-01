@@ -1,7 +1,7 @@
 import MovieService from '@root/data/movie';
-import Metadata from '@root/metadata/movie';
+import MovieMetadata from '@root/metadata/movie';
 
-import { Movie } from '@root/models';
+import { Movie, File } from '@root/models';
 
 import { Files } from './files';
 
@@ -12,8 +12,6 @@ export class MovieIndexer {
     constructor(paths: string[]) {
         this.paths = paths;
         this.fileManager = new Files();
-
-        Metadata.receiveMovie(this.onMessage.bind(this));
     }
 
     async run() : Promise<void> {
@@ -25,16 +23,30 @@ export class MovieIndexer {
         let files = [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library, extensions))));
         console.log(`[movie-indexer] Found ${files.length} video files.`);
 
-        let movies: Movie[] = await Promise.all(files.map(file => Movie.fromFile(file)));
-        movies = await MovieService.load(movies);
-        console.log(`[movie-indexer] ${movies.length} new movies.`);
+        for (var i = 0; i < files.length; i++)
+            await this.processFile(files[i]);
 
-        movies.forEach((movie: Movie) => Metadata.enqueueMovie(movie));
-        console.log(`[movie-indexer] Enqueued ${movies.length} movies for metadata retrieval.`);
+        console.log(`[movie-indexer] Done. Processed ${files.length} movies.`);
     }
+    
+    async processFile(file: File) : Promise<void> {
+        try {
+            const title = file.path.split('/').slice(-2, -1).join(),
+                name = title.split(' ').slice(0, -1).join(' '),
+                year = parseInt(title.substring(title.lastIndexOf(' ')+1).replace('(', '').replace(')', ''));
 
-    private async onMessage(movie: Movie) {
-        console.log(`[movie-indexer] Updating movie. ${JSON.stringify(movie)}.`);
-        await MovieService.updateOne(movie);
+            console.log(`[tv-indexer] Processing ${file.path}.`);
+
+            let movie: Movie = await MovieService.findOne({ name, year });
+            if (!movie)
+                movie = await MovieService.insertOne({ name, year } as Movie);
+            if (!movie.poster || !movie.synopsis) {
+                movie = await MovieMetadata.getMovie(movie);
+                await MovieService.updateOne(movie);
+            }
+        } catch (e) {
+            console.log(`[movie-indexer] Error processing ${file.path}.`);
+            console.error(e);
+        }
     }
 }

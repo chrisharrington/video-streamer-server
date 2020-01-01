@@ -6,8 +6,8 @@ import { MovieIndexer } from '@root/indexer/movie';
 import { TvIndexer } from './indexer/tv';
 
 [
-    // new Server(Config.serverPort),
-    // new MovieIndexer(['/media/movies']),
+    new Server(Config.serverPort),
+    new MovieIndexer(['/media/movies']),
     new TvIndexer(['/media/tv'])
 ].forEach(async task => {
     try {
