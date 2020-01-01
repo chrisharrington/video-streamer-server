@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "baseUrl": ".",
+      "paths": {
+          "@root/*": ["./*"],
+          "@api/*": ["./api/*"],
+          "@indexer/*": ["./indexer/*"]
+      },
+      "sourceMap": true
+    },
+    "include": [
+      "**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ],
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  }

@@ -67,4 +67,4 @@ typings/
 *.mkv
 
 # MongoDB database
-data/
+db/

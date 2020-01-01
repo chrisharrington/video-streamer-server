@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   queue:
     image: rabbitmq:3-management
@@ -14,17 +14,30 @@ services:
     ports:
       - '27017:27017'
     volumes:
-      - ./data:/data/db
+      - ./db:/data/db
   api:
-    build: ./api/.
+    build:
+      context: .
+      dockerfile: ./api/Dockerfile
     container_name: video-streamer-api
     restart: unless-stopped
     ports:
       - 8101:8101
-      - 9229:9229
     volumes:
       - ~/media:/media
-      - ./api:/app
+      - ./:/app
+    depends_on:
+      - queue
+      - data
+  indexer:
+    build:
+      context: .
+      dockerfile: ./indexer/Dockerfile
+    container_name: video-streamer-indexer
+    restart: unless-stopped
+    volumes:
+      - ~/media:/media
+      - ./:/app
     depends_on:
       - queue
       - data

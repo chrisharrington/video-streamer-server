@@ -1,6 +1,5 @@
 import * as express from 'express';
 import * as fs from 'fs';
-import * as ffmpeg from 'fluent-ffmpeg';
 
 import MovieService from '@root/data/movie';
 import { Movie } from '@root/models';
@@ -13,7 +12,6 @@ export default class Movies {
         app.post('/movies/progress', this.saveMovieProgress.bind(this));
         app.get('/movies/:year/:name', this.getMovieByYearAndName.bind(this));
 
-        app.get('/movies/stream/:year/:name', this.streamMovie.bind(this));
         app.get('/movies/play/:year/:name', this.playMovie.bind(this));
         app.get('/movies/subtitle/:year/:name', this.getSubtitlesForMovie.bind(this));
     }
@@ -132,32 +130,6 @@ export default class Movies {
         } catch (e) {
             console.error(`[server] Request failed: GET /movies/subtitle/:year/:name`, e.toString());
             response.sendStatus(500);
-        }
-    }
-
-    private static async streamMovie(request: express.Request, response: express.Response) {
-        const movie = await MovieService.getByYearAndName(parseInt(request.params.year), request.params.name);
-        console.log(`[server] Request received: GET /stream-movie/${movie.year}/${movie.name}`);
-
-        try {
-            const stat = await fs.statSync(movie.path);
-            response.set('Content-Type', 'video/mp4');
-            response.set('Content-Length', stat.size.toString());
-
-            new ffmpeg({ source: movie.path })
-                // .seekInput(request.query.seek ? parseInt(request.query.seek) : 0)
-                .outputOptions('-movflags frag_keyframe+empty_moov')
-                .withVideoCodec('libx264')
-                .withAudioBitrate('128k')
-                .withAudioCodec('libmp3lame')
-                .toFormat('mp4')
-                .on('stderr', e => console.log(e))
-                .on('error', () => console.log('An error occurred.'))
-                .pipe(response, { end: true });
-        } catch (e) {
-            console.log(`[server] Request failed: GET /stream-movie/${movie.year}/${movie.name}.`);
-            console.error(e);
-            response.status(500).send(e);
         }
     }
 }

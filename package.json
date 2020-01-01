@@ -1,0 +1,49 @@
+{
+  "name": "video-streamer-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "api": "./node_modules/.bin/tsc && node api/app.js",
+    "api-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn api\"",
+    "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
+    "indexer-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn indexer\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisharrington/video-streamer-server.git"
+  },
+  "author": "Chris Harrington",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chrisharrington/video-streamer-server/issues"
+  },
+  "homepage": "https://github.com/chrisharrington/video-streamer-server#readme",
+  "_moduleAliases": {
+    "@root": "./",
+    "@api": "./api/",
+    "@indexer": "./indexer/"
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.8.18",
+    "express": "^4.16.3",
+    "get-video-duration": "^1.0.3",
+    "install": "^0.12.1",
+    "module-alias": "^2.1.0",
+    "mongodb": "^3.3.3",
+    "node-fetch": "^2.6.0",
+    "npm": "^6.12.0",
+    "recursive-readdir": "^2.2.2",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.5.8",
+    "@types/express": "^4.16.0",
+    "@types/mongodb": "^3.1.4",
+    "@types/node": "^12.11.1",
+    "nodemon": "^1.19.4",
+    "typescript": "^3.6.4"
+  }
+}
