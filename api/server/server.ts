@@ -3,6 +3,7 @@ import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
 
 import Movies from './movies';
+import Shows from './shows';
 
 export default class Server {
     port: number;
@@ -16,7 +17,8 @@ export default class Server {
         app.use(cors());
         app.use(bodyParser.json());
 
-        Movies.initialize(app);
+        new Movies().initialize(app);
+        new Shows().initialize(app);
 
         app.listen(this.port, () => console.log(`[server] Listening on port ${this.port}...`));
     }

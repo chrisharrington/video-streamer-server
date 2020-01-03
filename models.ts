@@ -1,4 +1,5 @@
 import * as path from 'path';
+import getVideoDuration from 'get-video-duration';
 
 export class Id {
     _id: string;
@@ -34,18 +35,6 @@ export class Movie extends Media {
         this.parse();
     }
 
-    static async fromFile(file: File, runtime: number) : Promise<Movie> {
-        let movie = new Movie(file.path);
-        let parts = file.path.split('/');
-        let descriptor = parts[parts.length-2];
-        parts = descriptor.split(' ');
-        movie.year = parseInt(parts[parts.length-1].replace('(', '').replace(')', ''));
-        movie.name = parts.slice(0, parts.length-1).join(' ');
-        movie.runtime = runtime;
-        movie.progress = 0;
-        return movie;
-    }
-
     private parse() {
         let split = this.path.split('//'),
             last = split[split.length-1];
@@ -54,14 +43,35 @@ export class Movie extends Media {
         this.name = split.slice(0, split.length - 1).join(' '),
         this.year = parseInt(split[split.length - 1].replace('(', '').replace(')', ''))
     }
+
+    static isMetadataMissing(movie: Movie) {
+        return !movie.externalId ||
+            !movie.poster ||
+            !movie.synopsis ||
+            !movie.genres;
+    }
 }
 
 export class Show extends Id {
     externalId: string;
     name: string;
     poster: string;
+    backdrop: string;
     synopsis: string;
     year: number;
+
+    constructor(name?: string) {
+        super();
+        this.name = name;
+    }
+
+    static isMetadataMissing(show: Show) : boolean {
+        return !show.externalId ||
+            !show.poster ||
+            !show.backdrop ||
+            !show.synopsis ||
+            !show.year;
+    }
 }
 
 export class Season extends Id {
@@ -71,6 +81,22 @@ export class Season extends Id {
     synopsis: string;
     year: number;
     show: string;
+    episodeCount: number;
+
+    constructor(number?: number, show?: string) {
+        super();
+        this.number = number;
+        this.show = show;
+    }
+
+    static isMetadataMissing(season: Season) : boolean {
+        return !season.externalId ||
+            !season.number ||
+            !season.poster ||
+            !season.synopsis ||
+            !season.year ||
+            !season.episodeCount;
+    }
 }
 
 export class Episode extends Media {
@@ -87,6 +113,13 @@ export class Episode extends Media {
         const model = new Episode();
         model.number = parseInt(file.path.substr(file.path.lastIndexOf('/')+1, 6).substr(4, 6));
         return model;
+    }
+
+    static isMetadataMissing(episode: Episode) : boolean {
+        return !episode.externalId ||
+            !episode.synopsis ||
+            !episode.airDate ||
+            !episode.name;
     }
 }
 

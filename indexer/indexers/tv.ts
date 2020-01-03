@@ -50,9 +50,6 @@ export class TvIndexer {
 
             console.log(`[tv-indexer] Processing ${file.path}.`);
 
-            if (await EpisodeService.findOne({ number: tv.episode, season: tv.season, show: tv.show }))
-                return;
-            
             const show = await this.processShow(tv.show),
                 season = await this.processSeason(tv.season, show);
             await this.processEpisode(file, tv.episode, season, show);
@@ -66,7 +63,7 @@ export class TvIndexer {
         let show = await ShowService.findOne({ name });
         if (!show)
             show = await ShowService.insertOne({ name } as Show);
-        if (!show.synopsis || !show.synopsis || !show.year) {
+        if (Show.isMetadataMissing(show)) {
             show = await Metadata.getShow(show);
             await ShowService.updateOne(show);
         }
@@ -77,7 +74,7 @@ export class TvIndexer {
         let season = await SeasonService.findOne({ number, show: show.name });
         if (!season)
             season = await SeasonService.insertOne({ number, show: show.name } as Season);
-        if (!season.poster) {
+        if (Season.isMetadataMissing(season)) {
             season = await Metadata.getSeason(season, show);
             await SeasonService.updateOne(season);
         }
@@ -87,8 +84,9 @@ export class TvIndexer {
     private async processEpisode(file: File, number: number, season: Season, show: Show) : Promise<void> {
         let episode = await EpisodeService.findOne({ number, season: season.number, show: show.name });
         if (!episode)
-            episode = await EpisodeService.insertOne({ path: file.path, number, season: season.number, show: show.name } as Episode);
-        if (!episode.synopsis) {
+            episode = await EpisodeService.insertOne({ number, season: season.number, show: show.name } as Episode);
+        episode.path = file.path;
+        if (Episode.isMetadataMissing(episode)) {
             episode = await Metadata.getEpisode(episode, season, show);
             await EpisodeService.updateOne(episode);
         }

@@ -10,7 +10,7 @@ class SeasonService extends Base<Season> {
     async get() : Promise<Season[]> {
         let collection = await this.connect();
         return new Promise<Season[]>((resolve, reject) => {
-            collection.find({}).sort({ name: 1 }).toArray((error, movies) => {
+            collection.find({}).sort({ number: 1 }).toArray((error, movies) => {
                 if (error) reject(error);
                 else resolve(movies);
             });

@@ -30,11 +30,14 @@ export class Base<TModel> {
         return result[0];
     }
 
-    public async find(query: any) : Promise<TModel[]> {
+    public async find(query: any, sort?: any) : Promise<TModel[]> {
         let collection = await this.connect();
 
         return new Promise<TModel[]>((resolve, reject) => {
-            collection.find(query).toArray((error, result) => {
+            let q = collection.find(query);
+            if (sort)
+                q = q.sort(sort);
+            q.toArray((error, result) => {
                 if (error) reject(error);
                 else resolve(result);
             });

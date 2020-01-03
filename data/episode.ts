@@ -10,7 +10,7 @@ class EpisodeService extends Base<Episode> {
     async get() : Promise<Episode[]> {
         let collection = await this.connect();
         return new Promise<Episode[]>((resolve, reject) => {
-            collection.find({}).sort({ name: 1 }).toArray((error, movies) => {
+            collection.find({}).sort({ number: 1 }).toArray((error, movies) => {
                 if (error) reject(error);
                 else resolve(movies);
             });

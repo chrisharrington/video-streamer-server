@@ -1,3 +1,5 @@
+import getVideoDuration from 'get-video-duration';
+
 import MovieService from '@root/data/movie';
 
 import MovieMetadata from '@indexer/metadata/movie';
@@ -40,7 +42,10 @@ export class MovieIndexer {
 
             let movie: Movie = await MovieService.findOne({ name, year });
             if (!movie)
-                movie = await MovieService.insertOne({ name, year } as Movie);
+                movie = await MovieService.insertOne({ name, year, progress: 0, runtime: (await getVideoDuration(file.path)) } as Movie);
+
+            movie.path = file.path;
+
             if (!movie.poster || !movie.synopsis) {
                 movie = await MovieMetadata.getMovie(movie);
                 await MovieService.updateOne(movie);

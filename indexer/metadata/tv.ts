@@ -12,12 +12,14 @@ class TvMetadata extends Metadata {
             console.log(`[tv-metadata] Received TV show metadata message. ${show.name}.`);
             
             const search = (await this.showSearch(show.name)).results[0],
-                details = await this.showDetails(search.id);
-
+                details = await this.showDetails(search.id),
+                configuration = await this.configuration;
+                
             show.externalId = search.id;
             show.year = dayjs(details.first_air_date, 'yyyy-mm-dd').year();
             show.synopsis = details.overview;
-            show.poster = `${(await this.configuration).base_url}w342${details.poster_path}`;
+            show.poster = `${configuration.base_url}w342${details.poster_path}`;
+            show.backdrop = `${configuration.base_url}original${details.backdrop_path}`;
             return show;
         } catch (e) {
             console.log(`[tv-metadata] Error processing metadata for ${show.name}: ${e.toString()}`)
@@ -35,6 +37,7 @@ class TvMetadata extends Metadata {
             season.synopsis = details.overview;
             season.year = dayjs(details.air_date, 'yyyy-mm-dd').year();
             season.poster = `${(await this.configuration).base_url}w342${details.poster_path}`;
+            season.episodeCount = details.episodes.length;
             return season;
         } catch (e) {
             console.log(`[tv-metadata] Error processing metadata for ${season.show} / ${season.number}: ${e.toString()}`);

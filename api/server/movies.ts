@@ -4,10 +4,12 @@ import * as fs from 'fs';
 import MovieService from '@root/data/movie';
 import { Movie } from '@root/models';
 
-export default class Movies {
+import Base from './base';
+
+export default class Movies extends Base {
     app: express.Application;
 
-    static initialize(app) {
+    initialize(app) {
         app.get('/movies/all', this.getMovies.bind(this));
         app.post('/movies/progress', this.saveMovieProgress.bind(this));
         app.get('/movies/:year/:name', this.getMovieByYearAndName.bind(this));
@@ -16,7 +18,7 @@ export default class Movies {
         app.get('/movies/subtitle/:year/:name', this.getSubtitlesForMovie.bind(this));
     }
 
-    private static async getMovies(_, response: express.Response) {
+    private async getMovies(_, response: express.Response) {
         console.log('[server] Request received: GET /movies');
 
         try {
@@ -24,12 +26,13 @@ export default class Movies {
             console.log(`[server] Request succeeded. GET /movies. Found ${movies.length} movies.`);
             response.status(200).send(movies.map(this.sanitize));
         } catch (e) {
-            console.error(`[server] Request failed: GET /movies. ${e.toString()}`);
+            console.error(`[server] Request failed: GET /movies.`);
+            console.error(e);
             response.status(500).send(e);
         }
     }
 
-    private static async getMovieByYearAndName(request: express.Request, response: express.Response) {
+    private async getMovieByYearAndName(request: express.Request, response: express.Response) {
         console.log('[server] Request received: GET /movies/:year/:name');
     
         try {
@@ -37,12 +40,13 @@ export default class Movies {
             console.log(`[server] Request succeeded. GET /movies/:year/:name. Found movie:`, JSON.stringify(movie, null, 4));
             response.status(200).send(this.sanitize(movie));
         } catch (e) {
-            console.error(`[server] Request failed: GET /movies/:year/:name. ${e.toString()}`);
+            console.error(`[server] Request failed: GET /movies/:year/:name.`);
+            console.error(e);
             response.status(500).send(e);
         }
     }
 
-    private static async saveMovieProgress(request: express.Request, response: express.Response) {
+    private async saveMovieProgress(request: express.Request, response: express.Response) {
         console.log('[server] Request received: POST /movies/progress', request.body);
 
         try {
@@ -63,17 +67,18 @@ export default class Movies {
             await MovieService.updateOne(movie);
             response.sendStatus(200);
         } catch (e) {
-            console.error(`[server] Request failed: POST /movies/:year/:name/:secondsFromStart. ${e.toString()}`);
+            console.error(`[server] Request failed: POST /movies/:year/:name/:secondsFromStart.`);
+            console.error(e);
             response.status(500).send(e);
         }
     }
 
-    private static sanitize(movie: Movie) : Movie {
+    private sanitize(movie: Movie) : Movie {
         delete movie.path;
         return movie;
     }
 
-    private static async playMovie(request: express.Request, response: express.Response) {
+    private async playMovie(request: express.Request, response: express.Response) {
         console.log('[server] Request received: GET /movies/play/:year/:name', request.params.year, request.params.name, request.headers.range);
 
         try {
@@ -83,35 +88,15 @@ export default class Movies {
                 response.sendStatus(404);
             }
 
-            const stat = fs.statSync(movie.path),
-                fileSize = stat.size,
-                range = request.headers.range;
-
-            if (range) {
-                const parts = range.replace(/bytes=/, '').split('-');
-                const start = parseInt(parts[0], 10);
-                const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
-                response.writeHead(206, {
-                    'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                    'Accept-Ranges': 'bytes',
-                    'Content-Length': (end-start)+1,
-                    'Content-Type': 'video/webm',
-                });
-                fs.createReadStream(movie.path, { start, end }).pipe(response);
-            } else {
-                response.writeHead(200, {
-                    'Content-Length': fileSize,
-                    'Content-Type': 'video/webm',
-                });
-                fs.createReadStream(movie.path).pipe(response);
-            }
+            this.stream(request, response, movie.path);
         } catch (e) {
-            console.error('[server] Request failed: GET /movies/play/:year/:name', e.toString());
+            console.error('[server] Request failed: GET /movies/play/:year/:name');
+            console.error(e);
             response.sendStatus(500);
         }
     }
 
-    private static async getSubtitlesForMovie(request: express.Request, response: express.Response) {
+    private async getSubtitlesForMovie(request: express.Request, response: express.Response) {
         console.log(`[server] Request received: GET /movies/subtitle/:year/:name`, request.params.year, request.params.name);
 
         try {
@@ -128,7 +113,8 @@ export default class Movies {
             });
             fs.createReadStream(path).pipe(response);
         } catch (e) {
-            console.error(`[server] Request failed: GET /movies/subtitle/:year/:name`, e.toString());
+            console.error(`[server] Request failed: GET /movies/subtitle/:year/:name`);
+            console.error(e);
             response.sendStatus(500);
         }
     }
