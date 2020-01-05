@@ -1,3 +1,3 @@
-FROM node:8.9-alpine
+FROM node:latest
 WORKDIR /app
 CMD yarn indexer-dev

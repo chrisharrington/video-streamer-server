@@ -77,4 +77,17 @@ export class Base<TModel> {
             })
         });
     }
+
+    public async remove(model: Id) : Promise<void> {
+        let collection = await this.connect();
+
+        return new Promise<void>((resolve, reject) => {
+            collection.deleteOne({
+                _id: new ObjectID(model._id)
+            }, (error) => {
+                if (error) reject(error);
+                else resolve();
+            });
+        });
+    }
 }

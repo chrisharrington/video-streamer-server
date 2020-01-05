@@ -41,3 +41,15 @@ services:
     depends_on:
       - queue
       - data
+  # converter:
+  #   build:
+  #     context: .
+  #     dockerfile: ./converter/Dockerfile
+  #   container_name: video-streamer-converter
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ~/media:/media
+  #     - ./:/app
+  #   depends_on:
+  #     - queue
+  #     - data

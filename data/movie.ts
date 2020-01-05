@@ -20,9 +20,9 @@ class MovieService extends Base<Movie> {
     async getByYearAndName(year: number, name: string) : Promise<Movie> {
         let collection = await this.connect();
         return new Promise<Movie>((resolve, reject) => {
-            collection.find({ year, name }).sort({ name: 1 }).toArray((error, movies) => {
+            collection.find({ year, name: new RegExp(name.escapeForRegEx(), 'i') }).sort({ name: 1 }).toArray((error, movies) => {
                 if (error) reject(error);
-                if (movies.length === 0) reject(`No movie found with name ${name} in ${year}.`);
+                if (movies.length === 0) reject(`No movie found with name ${name} and year ${year}.`);
                 else resolve(movies[0]);
             });
         });

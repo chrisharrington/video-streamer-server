@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+
 import ShowService from '@root/data/show';
 import SeasonService from '@root/data/season';
 import EpisodeService from '@root/data/episode';
@@ -32,6 +34,8 @@ export class TvIndexer {
 
     async run() : Promise<void> {
         console.log('[tv-indexer] Indexing TV shows.');
+
+        await this.removeEpisodesWithNoFile();
 
         const extensions = ['mkv', 'mp4', 'wmv', 'avi'];
 
@@ -90,5 +94,12 @@ export class TvIndexer {
             episode = await Metadata.getEpisode(episode, season, show);
             await EpisodeService.updateOne(episode);
         }
+    }
+
+    private async removeEpisodesWithNoFile() {
+        const episodes = (await EpisodeService.get()).filter((episode: Episode) => !fs.existsSync(episode.path));
+        for (var i = 0; i < episodes.length; i++)
+            await EpisodeService.remove(episodes[i]);
+        console.log(`[tv-indexer] Remove ${episodes.length} missing episode${episodes.length === 1 ? '' : 's'}.`);
     }
 }

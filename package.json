@@ -7,7 +7,9 @@
     "api": "./node_modules/.bin/tsc && node api/app.js",
     "api-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn api\"",
     "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
-    "indexer-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn indexer\""
+    "indexer-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn indexer\"",
+    "converter": "./node_modules/.bin/tsc && node converter/app.js",
+    "converter-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn converter\""
   },
   "repository": {
     "type": "git",
@@ -22,14 +24,17 @@
   "_moduleAliases": {
     "@root": "./",
     "@api": "./api/",
-    "@indexer": "./indexer/"
+    "@indexer": "./indexer/",
+    "@converter": "./converter/"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dayjs": "^1.8.18",
     "express": "^4.16.3",
+    "fluent-ffmpeg": "^2.1.2",
     "get-video-duration": "^1.0.3",
+    "handbrake-js": "^5.0.0",
     "install": "^0.12.1",
     "module-alias": "^2.1.0",
     "mongodb": "^3.3.3",

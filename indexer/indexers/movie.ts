@@ -1,4 +1,5 @@
 import getVideoDuration from 'get-video-duration';
+import * as fs from 'fs';
 
 import MovieService from '@root/data/movie';
 
@@ -20,10 +21,11 @@ export class MovieIndexer {
     async run() : Promise<void> {
         console.log('[movie-indexer] Indexing movies.');
 
-        // TODO: retrieve media library locations from database.
+        await this.removeMoviesWithNoFile();
+
         const extensions = ['mkv', 'mp4', 'wmv', 'avi'];
 
-        let files = [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library, extensions))));
+        const files = [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library, extensions))));
         console.log(`[movie-indexer] Found ${files.length} video files.`);
 
         for (var i = 0; i < files.length; i++)
@@ -32,13 +34,13 @@ export class MovieIndexer {
         console.log(`[movie-indexer] Done. Processed ${files.length} movies.`);
     }
     
-    async processFile(file: File) : Promise<void> {
+    private async processFile(file: File) : Promise<void> {
         try {
             const title = file.path.split('/').slice(-2, -1).join(),
                 name = title.split(' ').slice(0, -1).join(' '),
                 year = parseInt(title.substring(title.lastIndexOf(' ')+1).replace('(', '').replace(')', ''));
 
-            console.log(`[tv-indexer] Processing ${file.path}.`);
+            console.log(`[movie-indexer] Processing ${file.path}.`);
 
             let movie: Movie = await MovieService.findOne({ name, year });
             if (!movie)
@@ -54,5 +56,12 @@ export class MovieIndexer {
             console.log(`[movie-indexer] Error processing ${file.path}.`);
             console.error(e);
         }
+    }
+
+    private async removeMoviesWithNoFile() {
+        const movies = (await MovieService.get()).filter((movie: Movie) => !fs.existsSync(movie.path));
+        for (var i = 0; i < movies.length; i++)
+            await MovieService.remove(movies[i]);
+        console.log(`[movie-indexer] Removed ${movies.length} missing movie${movies.length === 1 ? '' : 's'}.`);
     }
 }
