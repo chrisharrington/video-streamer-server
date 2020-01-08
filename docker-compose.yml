@@ -1,12 +1,15 @@
-version: '3.7'
+version: '2.3'
 services:
   queue:
     image: rabbitmq:3-management
     container_name: video-streamer-queue
+    hostname: video-streamer-queue
     ports:
       - '5672:5672'
       - '15672:15672'
     restart: unless-stopped
+    volumes:
+      - /queue:/var/lib/rabbitmq
   data:
     image: 'mongo'
     container_name: video-streamer-database
@@ -41,15 +44,19 @@ services:
     depends_on:
       - queue
       - data
-  # converter:
-  #   build:
-  #     context: .
-  #     dockerfile: ./converter/Dockerfile
-  #   container_name: video-streamer-converter
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ~/media:/media
-  #     - ./:/app
-  #   depends_on:
-  #     - queue
-  #     - data
+  converter:
+    build:
+      context: .
+      dockerfile: ./converter/Dockerfile
+    container_name: video-streamer-converter
+    restart: unless-stopped
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /usr/local/cuda:/cuda
+      - ~/media:/media
+      - ./:/app
+    depends_on:
+      - queue
+      - data

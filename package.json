@@ -28,6 +28,7 @@
     "@converter": "./converter/"
   },
   "dependencies": {
+    "amqplib": "^0.5.5",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dayjs": "^1.8.18",
@@ -39,6 +40,7 @@
     "module-alias": "^2.1.0",
     "mongodb": "^3.3.3",
     "node-fetch": "^2.6.0",
+    "node-watch": "^0.6.3",
     "npm": "^6.12.0",
     "recursive-readdir": "^2.2.2",
     "uuid": "^3.3.2"

@@ -27,9 +27,9 @@ class MovieMetadata extends Metadata {
     }
 
     private async movieSearch(movie: Movie) : Promise<any> {
-        const response = await fetch(`${Config.metadataApiUrl}search/movie?api_key=${Config.metadataApiKey}&query=${movie.name}&year=${movie.year}`);
+        const response = await fetch(`${Config.metadataApiUrl}search/movie?api_key=${Config.metadataApiKey}&query=${movie.name.escapeForUrl()}&year=${movie.year}`);
         if (response.status !== 200)
-            throw new Error(`[movie-indexer] Invalid response from metadata API /search/movie?query=${movie.name}&year=${movie.year}: ${response.status}`);
+            throw new Error(`[movie-indexer] Invalid response from metadata API /search/movie?query=${movie.name.escapeForUrl()}&year=${movie.year}: ${response.status}`);
 
         return await response.json();
     }

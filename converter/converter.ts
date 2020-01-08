@@ -1,50 +1,99 @@
 import * as fs from 'fs';
+import * as path from 'path';
+import * as readline from 'readline';
 
 const FfmpegCommand = require('fluent-ffmpeg');
 
-interface Progress {
-    percentComplete: number;
-    fps: number;
-    avgFps: number;
-    eta: string;
-    task: string;
+// ffmpeg \
+//     -hwaccel nvdec \
+//     -i "/media/movies/2 Fast 2 Furious (2003)/2 Fast 2 Furious (2003).mp4" \
+//     -vsync 0 \
+//     -acodec aac \
+//     -c:v h264_nvenc \
+//     -b:v 5M \
+//     output.mp4
+
+class Progress {
+    frames: number;
+    currentFps: number;
+    currentKbps: number;
+    targetSize: number;
+    timemark: any;
+    percent: any;
+
+    static toString(progress: Progress, file: string) : string {
+        return progress.percent < 0 ? '' : `[converter] ${path.basename(file)}: ${progress.percent.toFixed(2)}% / ${progress.currentFps} FPS / ${progress.timemark}`;
+    }
 }
 
 export default class Converter {
-    static async convert(file: string) : Promise<void> {
-        if (!fs.existsSync(file)) {
-            console.error(`[converter] File ${file} doesn't exist.`);
+    private command: any;
+    private file: string;
+
+    async convert(file: string, output: string) : Promise<void> {
+        this.file = file;
+
+        return new Promise((resolve: () => void, reject: (error: Error) => void) => {
+            try {
+                const command = this.command = new FfmpegCommand(file)
+                    .inputOptions(
+                        '-hwaccel', 'nvdec'
+                    )
+                    .output(path.dirname(file) + '/converting.mp4')
+                    .outputOptions(
+                        '-vsync', '0',
+                        '-c:v', 'h264_nvenc',
+                        '-acodec', 'aac',
+                        '-b:v', '5M',
+                    );
+
+                const log = fs.createWriteStream(path.dirname(file) + '/log');
+                command.on('stderr', (data: string) => log.write(data));
+                command.on('start', () => console.log(`[converter] Beginning conversion: ${file}`));
+                command.on('progress', (progress: Progress) => this.onProgress(progress))
+                command.on('error', (error: string) => this.onError(error, reject));
+                command.on('end', () => this.onEnd(file, output, resolve));
+                command.run();
+            } catch (e) {
+                this.deleteFiles(path.dirname(this.file) + '/converting.mp4');
+                reject(e);
+            }
+        });
+    }
+
+    abort() {
+        try { this.command.ffmpegProc.stdin.write('q'); } catch (e) {}
+
+        const directory = path.dirname(this.file);
+        this.deleteFiles(directory + '/log', directory + '/converting.mp4');
+    }
+
+    private onError(error: string, reject: (error: Error) => void) {
+        error = error.toString();
+        if (error.indexOf('ffmpeg exited with code 255') > -1)
             return;
-        }
 
-        // ffmpeg -vsync 0 -hwaccel cuvid -c:v h264_cuvid -i "/home/chrisharrington/media/movies/Chef (2014)/Chef (2014) Bluray-1080p.mkv" -acodec aac -c:v h264_nvenc -b:v 5M output.mp4
-
-        console.log(`[converter] Beginning conversion: ${file}`);
-
-        new FfmpegCommand(file)
-            .audioCodec('')
-
-        // const conversion = hbjs.spawn({
-        //     input: file,
-        //     output: `${file.split('/').slice(-2, -1)}`,
-        //     preset: 'Chromecast 1080p30 Surround'
-        // });
-        
-        // conversion.on('error', error => console.error(error));
-        // conversion.on('progress', (progress: Progress) => this.onProgress(progress));
-        // conversion.on('end', () => this.onEnd(file));
+        reject(new Error(error));
     }
 
-    static onProgress(progress: Progress) {
-        const out = process.stdout;
-        out.clearLine(0);
-        out.cursorTo(0);
-        out.write(`[converter] ${progress.task} / ${progress.percentComplete.toFixed(2)}% / ${progress.fps.toFixed(2)} FPS / ${progress.avgFps.toFixed(2)} FPS / ${progress.eta}`);
+    private onProgress(progress: Progress) {
+        console.log(Progress.toString(progress, this.file));
     }
 
-    static onEnd(file: string) {
-        process.stdout.write('\n');
-        fs.unlinkSync(file);
-        console.log(`[converter] Finished encoding ${file}.`);
+    private onEnd(file: string, output: string, resolve: () => void) {
+        const directory = path.dirname(file);
+
+        fs.openSync(directory + '/converted', 'w');
+        this.deleteFiles(file, `${directory}/log`);
+        fs.renameSync(directory + '/converting.mp4', output);
+        console.log(`[converter] Finished processing ${file}.`);
+        resolve();
+    }
+
+    private deleteFiles(...files: string[]) {
+        files.forEach((file: string) => {
+            if (fs.existsSync(file))
+                fs.unlinkSync(file);
+        })
     }
 }

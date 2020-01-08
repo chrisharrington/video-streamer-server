@@ -63,7 +63,7 @@ class TvMetadata extends Metadata {
     }
 
     private async showSearch(name: string) : Promise<any> {
-        const response = await fetch(`${Config.metadataApiUrl}search/tv?api_key=${Config.metadataApiKey}&query=${name}`);
+        const response = await fetch(`${Config.metadataApiUrl}search/tv?api_key=${Config.metadataApiKey}&query=${name.escapeForUrl()}`);
         if (response.status !== 200)
             throw new Error(`[tv-indexer] Invalid response from metadata API /search/tv: ${response.status}`);
 

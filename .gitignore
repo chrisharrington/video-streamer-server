@@ -68,3 +68,6 @@ typings/
 
 # MongoDB database
 db/
+
+# RabbitMQ data
+queue/
