@@ -5,6 +5,9 @@ class Config {
     queueConnectionString: string = 'amqp://queue:5672';
 
     serverPort: number = 8101;
+
+    movieLibraries: string[] = ['/media/movies', '/media/kids-movies'];
+    tvLibraries: string[] = ['/media/tv', '/media/kids-tv'];
 }
 
 export default new Config();

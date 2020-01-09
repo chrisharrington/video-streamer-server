@@ -15,7 +15,7 @@ import '@root/extensions';
     const tvIndexer = new TvIndexer(tvDirectories),
         movieIndexer = new MovieIndexer(movieDirectories);
 
-    // await tvIndexer.run();
+    await tvIndexer.run();
     await movieIndexer.run();
 
     const watcher = new Watcher(...movieDirectories);

@@ -1,5 +1,4 @@
 import * as path from 'path';
-import getVideoDuration from 'get-video-duration';
 
 export class Id {
     _id: string;
@@ -122,5 +121,3 @@ export class Episode extends Media {
             !episode.name;
     }
 }
-
-// bravo/home/media/tv/The West Wing/Season 4/S04E01 - 20 Hours in America (1) WEBDL-1080p.mkv

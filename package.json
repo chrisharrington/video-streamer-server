@@ -9,7 +9,9 @@
     "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
     "indexer-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn indexer\"",
     "converter": "./node_modules/.bin/tsc && node converter/app.js",
-    "converter-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn converter\""
+    "converter-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn converter\"",
+    "subtitler": "./node_modules/.bin/tsc && node subtitler/app.js",
+    "subtitler-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn subtitler\""
   },
   "repository": {
     "type": "git",

@@ -60,3 +60,15 @@ services:
     depends_on:
       - queue
       - data
+  subtitler:
+    build:
+      context: .
+      dockerfile: ./subtitler/Dockerfile
+    container_name: video-streamer-subtitler
+    restart: unless-stopped
+    volumes:
+      - ~/media:/media
+      - ./:/app
+    depends_on:
+      - queue
+      - data

@@ -1,12 +1,15 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
+import Files from '@root/files';
 import ShowService from '@root/data/show';
 import SeasonService from '@root/data/season';
 import EpisodeService from '@root/data/episode';
 import Metadata from '@indexer/metadata/tv';
 import { Episode, File, Show, Season } from '@root/models';
+import { Watcher, WatcherEvent } from '@root/watcher';
 
-import { Files } from './files';
+import Base from './base';
 
 class TvFile {
     show: string;
@@ -23,13 +26,15 @@ class TvFile {
     }
 }
 
-export class TvIndexer {
+export class TvIndexer extends Base {
     paths: string[];
     fileManager: Files;
     
     constructor(paths: string[]) {
+        super();
+
         this.paths = paths;
-        this.fileManager = new Files();
+        this.fileManager = new Files((file: string) => this.fileFilter(file));
     }
 
     async run() : Promise<void> {
@@ -37,25 +42,29 @@ export class TvIndexer {
 
         await this.removeEpisodesWithNoFile();
 
-        const extensions = ['mkv', 'mp4', 'wmv', 'avi'];
-
-        const files = [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library, extensions))));
+        const files = [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
         console.log(`[tv-indexer] Found ${files.length} video files.`);
         
         for (var i = 0; i < files.length; i++)
             await this.processFile(files[i]);
 
         console.log(`[tv-indexer] Done. Processed ${files.length} TV episodes.`);
+
+        const watcher = new Watcher(...this.paths);
+        watcher.on(WatcherEvent.Update, async (file: File) => {
+            if (this.fileFilter(file.path))
+                await this.processFile(file);
+        });
     }
 
     private async processFile(file: File) : Promise<void> {
         try {
-            const tv = await TvFile.fromFile(file);
-
             console.log(`[tv-indexer] Processing ${file.path}.`);
 
-            const show = await this.processShow(tv.show),
+            const tv = TvFile.fromFile(file),
+                show = await this.processShow(tv.show),
                 season = await this.processSeason(tv.season, show);
+
             await this.processEpisode(file, tv.episode, season, show);
         } catch (e) {
             console.log(`[tv-indexer] Error processing ${file.path}.`);

@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as readline from 'readline';
+
+import Queue from '@root/queue';
+import { File } from '@root/models';
 
 const FfmpegCommand = require('fluent-ffmpeg');
 
@@ -13,6 +15,16 @@ const FfmpegCommand = require('fluent-ffmpeg');
 //     -b:v 5M \
 //     output.mp4
 
+export class Conversion {
+    path: string;
+    output: string;
+
+    constructor(path: string, output: string) {
+        this.path = path;
+        this.output = output;
+    }
+}
+
 class Progress {
     frames: number;
     currentFps: number;
@@ -22,53 +34,67 @@ class Progress {
     percent: any;
 
     static toString(progress: Progress, file: string) : string {
-        return progress.percent < 0 ? '' : `[converter] ${path.basename(file)}: ${progress.percent.toFixed(2)}% / ${progress.currentFps} FPS / ${progress.timemark}`;
+        return progress.percent < 0 ? '' : `[converter] ${file}: ${progress.percent.toFixed(2)}% / ${progress.currentFps} FPS / ${progress.timemark}`;
     }
 }
 
-export default class Converter {
-    private command: any;
-    private file: string;
+export class Converter {
+    private static command: any;
+    private static file: string;
+    private static output: string;
 
-    async convert(file: string, output: string) : Promise<void> {
+    static initialize(queue: Queue) {
+        queue.receive(async (file: Conversion) => {
+            try {
+                console.log(`[converter] Received ${file.path} for conversion.`);
+                await this.convert(file.path, file.output);
+            } catch (e) {
+                console.log(`[converter] Failed to convert ${file.path}.`);
+                console.error(e);
+
+                queue.sendError({ file, e });
+            }
+        });
+
+        process.on('SIGINT', () => this.abort());
+    }
+
+    private static async convert(file: string, output: string) : Promise<void> {
         this.file = file;
+        this.output = output;
 
         return new Promise((resolve: () => void, reject: (error: Error) => void) => {
             try {
-                const command = this.command = new FfmpegCommand(file)
+                const command = this.command = new FfmpegCommand(this.file)
                     .inputOptions(
                         '-hwaccel', 'nvdec'
                     )
-                    .output(path.dirname(file) + '/converting.mp4')
+                    .output(this.changeFileExtension(this.output, 'converting.mp4'))
                     .outputOptions(
                         '-vsync', '0',
                         '-c:v', 'h264_nvenc',
                         '-acodec', 'aac',
-                        '-b:v', '5M',
+                        '-b:v', '5M'
                     );
 
-                const log = fs.createWriteStream(path.dirname(file) + '/log');
-                command.on('stderr', (data: string) => log.write(data));
-                command.on('start', () => console.log(`[converter] Beginning conversion: ${file}`));
-                command.on('progress', (progress: Progress) => this.onProgress(progress))
+                command.on('start', () => console.log(`[converter] Converting: ${this.file}`));
+                // command.on('progress', (progress: Progress) => this.onProgress(progress))
                 command.on('error', (error: string) => this.onError(error, reject));
-                command.on('end', () => this.onEnd(file, output, resolve));
+                command.on('end', () => this.onEnd(this.file, this.output, resolve));
                 command.run();
             } catch (e) {
-                this.deleteFiles(path.dirname(this.file) + '/converting.mp4');
+                this.deleteFiles(this.changeFileExtension(this.output, 'converting.mp4'));
                 reject(e);
             }
         });
     }
 
-    abort() {
+    static abort() {
         try { this.command.ffmpegProc.stdin.write('q'); } catch (e) {}
-
-        const directory = path.dirname(this.file);
-        this.deleteFiles(directory + '/log', directory + '/converting.mp4');
+        this.deleteFiles(this.changeFileExtension(this.output, 'converting.mp4'));
     }
 
-    private onError(error: string, reject: (error: Error) => void) {
+    private static onError(error: string, reject: (error: Error) => void) {
         error = error.toString();
         if (error.indexOf('ffmpeg exited with code 255') > -1)
             return;
@@ -76,24 +102,25 @@ export default class Converter {
         reject(new Error(error));
     }
 
-    private onProgress(progress: Progress) {
+    private static onProgress(progress: Progress) {
         console.log(Progress.toString(progress, this.file));
     }
 
-    private onEnd(file: string, output: string, resolve: () => void) {
-        const directory = path.dirname(file);
-
-        fs.openSync(directory + '/converted', 'w');
-        this.deleteFiles(file, `${directory}/log`);
-        fs.renameSync(directory + '/converting.mp4', output);
+    private static onEnd(file: string, output: string, resolve: () => void) {
+        this.deleteFiles(file);
+        fs.renameSync(this.changeFileExtension(output, 'converting.mp4'), this.changeFileExtension(output, 'done.mp4'));
         console.log(`[converter] Finished processing ${file}.`);
         resolve();
     }
 
-    private deleteFiles(...files: string[]) {
+    private static deleteFiles(...files: string[]) {
         files.forEach((file: string) => {
             if (fs.existsSync(file))
                 fs.unlinkSync(file);
         })
+    }
+
+    private static changeFileExtension(file: string, extension: string) : string {
+        return file.substr(0, file.lastIndexOf('.')+1) + extension;
     }
 }

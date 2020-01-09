@@ -1,20 +1,25 @@
 import getVideoDuration from 'get-video-duration';
 import * as fs from 'fs';
+import * as path from 'path';
 
+import Files from '@root/files';
 import MovieService from '@root/data/movie';
 import { Movie, File } from '@root/models';
+import { Watcher, WatcherEvent } from '@root/watcher';
 
 import MovieMetadata from '@indexer/metadata/movie';
 
-import { Files } from './files';
+import Base from './base';
 
-export class MovieIndexer {
+export class MovieIndexer extends Base {
     paths: string[];
     fileManager: Files;
     
     constructor(paths: string[]) {
+        super();
+
         this.paths = paths;
-        this.fileManager = new Files();
+        this.fileManager = new Files((file: string) => this.fileFilter(file));
     }
 
     async run(...files: File[]) : Promise<void> {
@@ -22,15 +27,19 @@ export class MovieIndexer {
 
         await this.removeMoviesWithNoFile();
 
-        const extensions = ['mkv', 'mp4', 'wmv', 'avi'];
-
-        files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library, extensions))));
+        files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
         console.log(`[movie-indexer] Found ${files.length} video files.`);
 
         for (var i = 0; i < files.length; i++)
             await this.processFile(files[i]);
 
         console.log(`[movie-indexer] Done. Processed ${files.length} movies.`);
+
+        const watcher = new Watcher(...this.paths);
+        watcher.on(WatcherEvent.Update, async (file: File) => {
+            if (this.fileFilter(file.path))
+                await this.processFile(file);
+        });
     }
     
     async removeMoviesWithNoFile() {
