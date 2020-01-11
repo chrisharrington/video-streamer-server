@@ -1,25 +1,23 @@
 import getVideoDuration from 'get-video-duration';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import Files from '@root/files';
 import MovieService from '@root/data/movie';
-import { Movie, File } from '@root/models';
+import { Movie, File, FileState, Status, MessageType, Message } from '@root/models';
 import { Watcher, WatcherEvent } from '@root/watcher';
+import Queue from '@root/queue';
 
-import MovieMetadata from '@indexer/metadata/movie';
-
-import Base from './base';
-
-export class MovieIndexer extends Base {
+export class MovieIndexer {
     paths: string[];
     fileManager: Files;
+    subtitleQueue: Queue;
+    metadataQueue: Queue;
     
-    constructor(paths: string[]) {
-        super();
-
+    constructor(subtitleQueue: Queue, metadataQueue: Queue, paths: string[]) {
+        this.subtitleQueue = subtitleQueue;
+        this.metadataQueue = metadataQueue;
         this.paths = paths;
-        this.fileManager = new Files((file: string) => this.fileFilter(file));
+        this.fileManager = new Files((file: File) => file.is(FileState.Converted));
     }
 
     async run(...files: File[]) : Promise<void> {
@@ -33,11 +31,11 @@ export class MovieIndexer extends Base {
         for (var i = 0; i < files.length; i++)
             await this.processFile(files[i]);
 
-        console.log(`[movie-indexer] Done. Processed ${files.length} movies.`);
+        console.log(`[movie-indexer] Done. Processed ${files.length} movie${files.length === 1 ? '' : 's'}.`);
 
         const watcher = new Watcher(...this.paths);
         watcher.on(WatcherEvent.Update, async (file: File) => {
-            if (this.fileFilter(file.path))
+            if (file.is(FileState.Converted))
                 await this.processFile(file);
         });
     }
@@ -58,15 +56,32 @@ export class MovieIndexer extends Base {
             console.log(`[movie-indexer] Processing ${file.path}.`);
 
             let movie: Movie = await MovieService.findOne({ name, year });
-            if (!movie)
-                movie = await MovieService.insertOne({ name, year, progress: 0, runtime: (await getVideoDuration(file.path)) } as Movie);
+            if (!movie) {
+                movie = new Movie(file.path);
+                movie.name = name;
+                movie.year = year;
+                movie.progress = 0;
+                movie.runtime = await getVideoDuration(file.path);
+                movie.subtitles = null;
+                movie.subtitlesOffset = 0;
+                movie.subtitlesStatus = Status.Missing;
+                movie.metadataStatus = Status.Missing;
+                await MovieService.insertOne(movie);
+            }
 
             movie.path = file.path;
 
-            if (!movie.poster || !movie.synopsis) {
-                movie = await MovieMetadata.getMovie(movie);
-                await MovieService.updateOne(movie);
+            if (movie.metadataStatus === Status.Missing) {
+                movie.metadataStatus = Status.Queued;
+                this.metadataQueue.send(new Message(movie, MessageType.Movie));
             }
+
+            if (movie.subtitlesStatus === Status.Missing) {
+                movie.subtitlesStatus = Status.Queued;
+                await this.subtitleQueue.send(new Message(movie, MessageType.Movie));
+            }
+
+            await MovieService.updateOne(movie);
         } catch (e) {
             console.log(`[movie-indexer] Error processing ${file.path}.`);
             console.error(e);

@@ -11,7 +11,7 @@ export default class Movies extends Base {
 
     initialize(app) {
         app.get('/movies/all', this.getMovies.bind(this));
-        app.post('/movies/progress', this.saveMovieProgress.bind(this));
+        app.post('/movies/progress', this.saveProgress.bind(this));
         app.get('/movies/:year/:name', this.getMovieByYearAndName.bind(this));
 
         app.get('/movies/play/:year/:name', this.playMovie.bind(this));
@@ -46,7 +46,7 @@ export default class Movies extends Base {
         }
     }
 
-    private async saveMovieProgress(request: express.Request, response: express.Response) {
+    private async saveProgress(request: express.Request, response: express.Response) {
         console.log('[server] Request received: POST /movies/progress', request.body);
 
         try {
@@ -67,7 +67,7 @@ export default class Movies extends Base {
             await MovieService.updateOne(movie);
             response.sendStatus(200);
         } catch (e) {
-            console.error(`[server] Request failed: POST /movies/:year/:name/:secondsFromStart.`);
+            console.error(`[server] Request failed: POST /movies/progress.`);
             console.error(e);
             response.status(500).send(e);
         }

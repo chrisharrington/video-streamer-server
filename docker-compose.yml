@@ -72,3 +72,14 @@ services:
     depends_on:
       - queue
       - data
+  metadata:
+    build:
+      context: .
+      dockerfile: ./metadata/Dockerfile
+    container_name: video-streamer-metadata
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    depends_on:
+      - queue
+      - data

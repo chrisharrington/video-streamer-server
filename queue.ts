@@ -1,6 +1,7 @@
 import * as amqp from 'amqplib';
 
 import Config from '@root/config';
+import { Message } from '@root/models';
 
 export default class Queue {
     channel: amqp.Channel;
@@ -16,35 +17,38 @@ export default class Queue {
         this.initialized = this.initialize(queue);
     }
 
-    async send<TModel>(message: TModel) : Promise<boolean> {
+    async send(message: Message) : Promise<boolean> {
         return await this.sendInternal(this.queue, message);
     }
 
-    async sendError<TModel>(message: TModel) : Promise<boolean> {
+    async sendError(message: Message) : Promise<boolean> {
         return await this.sendInternal(this.errorQueue, message);
     }
 
-    async receive<TModel>(onMessage: (model: TModel) => Promise<void>) {
-        await this.receiveInternal(this.queue, onMessage);
+    async receive(onMessage: (model: Message) => Promise<void>, delay?: number) {
+        await this.receiveInternal(this.queue, onMessage, delay);
     }
 
-    async receiveError<TModel>(onMessage: (model: TModel) => Promise<void>) {
-        await this.receiveInternal(this.errorQueue, onMessage);
+    async receiveError(onMessage: (model: Message) => Promise<void>, delay?: number) {
+        await this.receiveInternal(this.errorQueue, onMessage, delay);
     }
 
-    private async sendInternal<TModel>(queue: string, message: TModel) : Promise<boolean> {
+    private async sendInternal(queue: string, message: Message) : Promise<boolean> {
         await this.initialized;
-        return this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)));
+        return this.channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), { persistent: true });
     }
 
-    private async receiveInternal<TModel>(queue: string, onMessage: (model: TModel) => Promise<void>) {
+    private async receiveInternal(queue: string, onMessage: (model: Message) => Promise<void>, delay?: number) {
         await this.initialized;
-        this.channel.consume(queue, async message => {
+        this.channel.consume(queue, async m => {
+            const message = JSON.parse(m.content.toString()) as Message;
             try {
-                await onMessage(JSON.parse(message.content.toString()) as TModel);
-                this.channel.ack(message);
+                if (delay)
+                    await this.delay(delay);
+                await onMessage(message);
+                this.channel.ack(m);
             } catch (e) {
-                this.send(message);
+                this.sendError(message);
             }
         });
     }
@@ -53,8 +57,14 @@ export default class Queue {
         const connection = await amqp.connect(Config.queueConnectionString),
             channel = await connection.createChannel();
 
-        await Promise.all([queue, queue + '-error'].map((q: string) => channel.assertQueue(q)));
+        await Promise.all([queue, queue + '-error'].map((q: string) => channel.assertQueue(q, { durable: true })));
         this.channel = channel;
-        this.channel.prefetch(1, false);
+        this.channel.prefetch(1);
+    }
+
+    private async delay(milliseconds: number) {
+        return new Promise(resolve => {
+            setTimeout(resolve, milliseconds);
+        });
     }
 }

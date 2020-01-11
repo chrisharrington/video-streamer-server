@@ -4,20 +4,75 @@ export class Id {
     _id: string;
 }
 
+export enum FileState {
+    Valid = 'valid',
+    Unprocessed = 'unprocessed',
+    Queued = 'queued',
+    Converting = 'converting',
+    Converted = 'done'
+}
+
 export class File {
     path: string;
     name: string;
+    extensions: string[];
 
     constructor(filepath?: string) {
         this.path = filepath;
         this.name = path.basename(filepath);
+        this.extensions = ['mkv', 'mp4', 'avi', 'wmv', 'm4a', 'webm', 'mpg', 'mov', 'mp2', 'mpeg', 'mp3', 'mpv', 'ogg', 'm4p', 'qt', 'flv', 'swf'];
     }
+
+    is(state: FileState) {
+        const path = this.path;
+        switch (state) {
+            case FileState.Valid:
+                return this.extensions.some((extension: string) => this.path.endsWith(extension));
+            case FileState.Unprocessed:
+                return !path.endsWith(`.${FileState.Converting}.mp4`) &&
+                    !path.endsWith(`.${FileState.Queued}.mp4`) &&
+                    !path.endsWith(`.${FileState.Converted}.mp4`);
+            default:
+                return path.endsWith(`${state}.mp4`);
+        }
+    }
+
+    show() {
+        return this.path.split('/').slice(-3)[0];
+    }
+
+    movie() {
+        return this.path.replace(`.${FileState.Converted}.mp4`, '');
+    }
+
+    episodeIdentifer() {
+        return this.path.substr(this.path.lastIndexOf('.')+1, 6);
+    }
+}
+
+export enum Status {
+    Missing = 'missing',
+    Queued = 'queued',
+    Fulfilled = 'fulfilled'
 }
 
 export class Media extends Id {
     path: string;
     runtime: number;
     progress: number;
+    subtitles: string | null;
+    subtitlesOffset: number;
+
+    subtitlesStatus: Status;
+    metadataStatus: Status;
+
+    constructor() {
+        super();
+
+        this.metadataStatus = Status.Missing;
+        this.subtitlesStatus = Status.Missing;
+        this.subtitlesOffset = 0;
+    }
 }
 
 export class Movie extends Media {
@@ -42,13 +97,6 @@ export class Movie extends Media {
         this.name = split.slice(0, split.length - 1).join(' '),
         this.year = parseInt(split[split.length - 1].replace('(', '').replace(')', ''))
     }
-
-    static isMetadataMissing(movie: Movie) {
-        return !movie.externalId ||
-            !movie.poster ||
-            !movie.synopsis ||
-            !movie.genres;
-    }
 }
 
 export class Show extends Id {
@@ -59,17 +107,12 @@ export class Show extends Id {
     synopsis: string;
     year: number;
 
+    metadataStatus: Status;
+
     constructor(name?: string) {
         super();
         this.name = name;
-    }
-
-    static isMetadataMissing(show: Show) : boolean {
-        return !show.externalId ||
-            !show.poster ||
-            !show.backdrop ||
-            !show.synopsis ||
-            !show.year;
+        this.metadataStatus = Status.Missing;
     }
 }
 
@@ -82,19 +125,13 @@ export class Season extends Id {
     show: string;
     episodeCount: number;
 
+    metadataStatus: Status;
+
     constructor(number?: number, show?: string) {
         super();
         this.number = number;
         this.show = show;
-    }
-
-    static isMetadataMissing(season: Season) : boolean {
-        return !season.externalId ||
-            !season.number ||
-            !season.poster ||
-            !season.synopsis ||
-            !season.year ||
-            !season.episodeCount;
+        this.metadataStatus = Status.Missing;
     }
 }
 
@@ -108,16 +145,27 @@ export class Episode extends Media {
     airDate: Date;
     name: string;
 
-    static async fromFile(file: File) : Promise<Episode> {
-        const model = new Episode();
-        model.number = parseInt(file.path.substr(file.path.lastIndexOf('/')+1, 6).substr(4, 6));
-        return model;
+    identifier() : string {
+        return this.path.substr(this.path.lastIndexOf('.')+1, 6);
     }
+}
 
-    static isMetadataMissing(episode: Episode) : boolean {
-        return !episode.externalId ||
-            !episode.synopsis ||
-            !episode.airDate ||
-            !episode.name;
+export enum MessageType {
+    Movie = 'movie',
+    Show = 'show',
+    Season = 'season',
+    Episode = 'episode',
+    Other = 'other'
+}
+
+export class Message {
+    type: MessageType;
+    payload: any;
+    error: string | null;
+
+    constructor(payload: any, type?: MessageType, error?: Error) {
+        this.type = type || MessageType.Other;
+        this.payload = payload;
+        this.error = error ? JSON.stringify(error) : null;
     }
 }

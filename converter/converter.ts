@@ -1,8 +1,7 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
+import { Message } from '@root/models';
 import Queue from '@root/queue';
-import { File } from '@root/models';
 
 const FfmpegCommand = require('fluent-ffmpeg');
 
@@ -44,7 +43,8 @@ export class Converter {
     private static output: string;
 
     static initialize(queue: Queue) {
-        queue.receive(async (file: Conversion) => {
+        queue.receive(async (message: Message) => {
+            const file = message.payload as Conversion;
             try {
                 console.log(`[converter] Received ${file.path} for conversion.`);
                 await this.convert(file.path, file.output);
@@ -52,7 +52,7 @@ export class Converter {
                 console.log(`[converter] Failed to convert ${file.path}.`);
                 console.error(e);
 
-                queue.sendError({ file, e });
+                queue.sendError(new Message(file, null, e));
             }
         });
 

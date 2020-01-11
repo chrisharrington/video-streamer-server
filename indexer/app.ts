@@ -1,24 +1,31 @@
 import 'module-alias/register';
+import '@root/extensions';
 
 import { Watcher, WatcherEvent } from '@root/watcher';
-import { File } from '@root/models';
+import { File, FileState } from '@root/models';
 
-import { MovieIndexer } from '@indexer/indexers/movie';
-import { TvIndexer } from './indexers/tv';
+import { MovieIndexer } from './movie';
+import { TvIndexer } from './tv';
 
-import '@root/extensions';
+import Queue from '@root/queue';
 
 (async () => {
     const tvDirectories = ['/media/tv'],
         movieDirectories = ['/media/movies'];
 
-    const tvIndexer = new TvIndexer(tvDirectories),
-        movieIndexer = new MovieIndexer(movieDirectories);
+    const metadataQueue = new Queue('metadata'),
+        subtitleQueue = new Queue('subtitler'),
+        tvIndexer = new TvIndexer(subtitleQueue, metadataQueue, tvDirectories),
+        movieIndexer = new MovieIndexer(subtitleQueue, metadataQueue, movieDirectories);
 
     await tvIndexer.run();
     await movieIndexer.run();
 
-    const watcher = new Watcher(...movieDirectories);
-    watcher.on(WatcherEvent.Remove, () => movieIndexer.removeMoviesWithNoFile());
-    watcher.on(WatcherEvent.Update, (file: File) => movieIndexer.run(file));
+    const movieWatcher = new Watcher(...movieDirectories);
+    movieWatcher.on(WatcherEvent.Remove, (file: File) => file.is(FileState.Converted) && movieIndexer.removeMoviesWithNoFile());
+    movieWatcher.on(WatcherEvent.Update, (file: File) => file.is(FileState.Converted) && movieIndexer.run(file));
+
+    const tvWatcher = new Watcher(...tvDirectories);
+    tvWatcher.on(WatcherEvent.Remove, (file: File) => file.is(FileState.Converted) && tvIndexer.removeEpisodesWithNoFile());
+    tvWatcher.on(WatcherEvent.Update, (file: File) => file.is(FileState.Converted) && tvIndexer.run(file));
 })();

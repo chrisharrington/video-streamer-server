@@ -1,12 +1,11 @@
-import * as path from 'path';
 import * as recursive from 'recursive-readdir';
 
 import { File } from '@root/models';
 
 export default class Files {
-    filter: (file: string) => boolean;
+    filter: (file: File) => boolean;
 
-    constructor(filter: (file: string) => boolean) {
+    constructor(filter: (file: File) => boolean) {
         this.filter = filter;
     }
 
@@ -17,7 +16,7 @@ export default class Files {
                     return reject(error);
     
                 if (this.filter)
-                    files = files.filter(this.filter);
+                    files = files.filter((file: string) => this.filter(new File(file)));
                 resolve(files.map((file: string) => new File(file)));
             });
         });

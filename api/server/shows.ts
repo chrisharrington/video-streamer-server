@@ -1,8 +1,11 @@
 import * as express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import ShowService from '@root/data/show';
 import SeasonService from '@root/data/season';
 import EpisodeService from '@root/data/episode';
+import { Episode, Status } from '@root/models';
 
 import Base from './base';
 
@@ -10,13 +13,17 @@ export default class Shows extends Base {
     app: express.Application;
 
     initialize(app) {
+        app.get('/shows/subtitle/:id', this.getSubtitlesForEpisode.bind(this));
+        app.get('/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
+
         app.get('/shows/all', this.getShows.bind(this));
         app.get('/shows/:show', this.getShow.bind(this));
         app.get('/shows/:show/seasons', this.getSeasons.bind(this));
         app.get('/shows/:show/:season', this.getSeason.bind(this));
         app.get('/shows/:show/:season/episodes', this.getEpisodes.bind(this));
         app.get('/shows/:show/:season/:episode', this.getEpisode.bind(this));
-        app.get('/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
+
+        app.post('/shows/progress', this.saveProgress.bind(this));
     }
 
     private async getShows(_, response: express.Response) {
@@ -152,6 +159,66 @@ export default class Shows extends Base {
             console.error(`[server] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);
             response.status(500).send(e);
+        }
+    }
+
+    private async saveProgress(request: express.Request, response: express.Response) {
+        console.log('[server] Request received: POST /movies/progress', request.body);
+
+        try {
+            let episode: Episode = await EpisodeService.findById(request.body.id);
+            if (!episode) {
+                console.error(`[server] Error: no episode found: ${request.body.id}.`);
+                response.sendStatus(404);
+                return;
+            }
+
+            episode.progress = parseInt(request.body.secondsFromStart);
+            if (isNaN(episode.progress)) {
+                console.error(`[server] Invalid progress: ${request.body.secondsFromStart}`);
+                response.sendStatus(400);
+                return;
+            }
+
+            await EpisodeService.updateOne(episode);
+            response.sendStatus(200);
+        } catch (e) {
+            console.error(`[server] Request failed: POST /episode/progress.`);
+            console.error(e);
+            response.status(500).send(e);
+        }
+    }
+
+    private async getSubtitlesForEpisode(request: express.Request, response: express.Response) {
+        const id = request.params.id;
+        console.log(`[server] Request received: GET /shows/subtitle/${id}`);
+
+        try {
+            const episode = await EpisodeService.findById(id);
+            if (!episode) {
+                console.error(`[server] Episode not found:`, id);
+                response.sendStatus(404);
+                return;
+            }
+
+            console.log(episode.path, path.basename(episode.path).substr(0, 6));
+
+            const file = `${path.dirname(episode.path)}/${path.basename(episode.path).substr(0, 6)}.vtt`;
+            if (episode.subtitlesStatus !== Status.Fulfilled || !fs.existsSync(file)) {
+                console.error(`[server] Subtitles for episode not found: ${file}`);
+                response.sendStatus(404);
+                return;
+            }
+
+            response.writeHead(200, {
+                'Content-Length': fs.statSync(file).size,
+                'Content-Type': 'text/vvt',
+            });
+            fs.createReadStream(file).pipe(response);
+        } catch (e) {
+            console.error(`[server] Request failed: GET /shows/subtitle/${id}`);
+            console.error(e);
+            response.sendStatus(500);
         }
     }
 }

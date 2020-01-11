@@ -1,6 +1,6 @@
 import 'module-alias/register';
 import '@root/extensions';
 
-import { Subtitler } from './subtitler';
+import Metadata from './metadata';
 
-Subtitler.initialize();
+Metadata.initialize();

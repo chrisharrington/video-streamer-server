@@ -3,6 +3,7 @@ class Config {
     metadataApiUrl: string = 'https://api.themoviedb.org/3/';
     databaseConnectionString: string = 'mongodb://data:27017';
     queueConnectionString: string = 'amqp://queue:5672';
+    subtitlesUserAgent: string = 'Showveo';
 
     serverPort: number = 8101;
 
