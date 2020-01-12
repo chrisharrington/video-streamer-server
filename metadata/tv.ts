@@ -2,6 +2,7 @@ import * as fetch from 'node-fetch';
 import * as dayjs from 'dayjs';
 
 import Config from '@root/config';
+import { StringExtensions } from '@root/extensions';
 import { Show, Season, Episode } from '@root/models';
 
 import Metadata from './base';
@@ -63,7 +64,7 @@ class TvMetadata extends Metadata {
     }
 
     private async showSearch(name: string) : Promise<any> {
-        const response = await fetch(`${Config.metadataApiUrl}search/tv?api_key=${Config.metadataApiKey}&query=${name.escapeForUrl()}`);
+        const response = await fetch(`${Config.metadataApiUrl}search/tv?api_key=${Config.metadataApiKey}&query=${StringExtensions.escapeForUrl(name)}`);
         if (response.status !== 200)
             throw new Error(`[tv-indexer] Invalid response from metadata API /search/tv: ${response.status}`);
 

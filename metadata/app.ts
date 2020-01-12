@@ -1,5 +1,5 @@
 import 'module-alias/register';
-import '@root/extensions';
+import 'sions';
 
 import Metadata from './metadata';
 

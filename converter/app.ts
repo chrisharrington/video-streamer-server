@@ -1,7 +1,5 @@
 import 'module-alias/register';
 
-import '@root/extensions';
-
 import Queue from '@root/queue';
 import Config from '@root/config';
 

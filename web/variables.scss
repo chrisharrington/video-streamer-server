@@ -1,0 +1,22 @@
+$font-size: 18px;
+$font-colour: white;
+$header-font: 'Josefin Sans';
+$body-font: 'Open Sans';
+
+$background-colour: #444;
+$base-colour: #0398fc;
+$dark-base-colour: darken($base-colour, 25%);
+$hover-colour: darken($base-colour, 12%);
+
+$header-height: 60px;
+$sidebar-width: 240px;
+
+$spacing: 25px;
+$spacing-small: 15px;
+
+@mixin vertical-centre($height) {
+    display: inline-block;
+    height: $height;
+    line-height: $height;
+    vertical-align: middle;
+}

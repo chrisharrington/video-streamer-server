@@ -1,0 +1,77 @@
+@import 'variables.scss';
+
+.view.show {
+    color: white;
+
+    .season-row, .episode-row {
+        padding: 0 $spacing-small;
+        background-color: rgba(100, 100, 100, 0.3);
+        border-radius: 3px;
+        cursor: pointer;
+        transition: background-color 150ms linear, transform 150ms linear;
+
+        &:hover {
+            background-color: rgba(100, 100, 100, 0.5);
+        }
+    }
+
+    .season-row {
+        @include vertical-centre(60px);
+
+        h4 {
+            float: left;
+        }
+
+        span {
+            float: right;
+            color: #AAA;
+            font-size: 0.85em;
+        }
+    }
+
+    .episode-row {
+        position: relative;
+        
+        .episode-header {
+            width: 100%;
+
+            span {
+                @include vertical-centre(60px);
+                width: 40px;
+                font-size: $font-size*1.2;
+                color: #AAA;
+                font-family: $header-font;
+            }
+
+            h4 {
+                @include vertical-centre(60px);
+                width: calc(100% - 40px);
+            }
+
+            .progress {
+                position: absolute;
+                right: $spacing-small;
+                top: 19px;
+                border-radius: 50%;
+                width: 22px;
+                height: 22px;
+                border: solid 2px $base-colour;
+
+                &.none {
+                    background-color: #222;
+                }
+
+                &.all {
+                    background-color: $base-colour;
+                }
+            }
+        }
+
+        .synopsis {
+            width: 100%;
+            margin-bottom: $spacing-small;
+            font-size: 0.9em;
+            color: #AAA;
+        }
+    }
+}

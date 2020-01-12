@@ -1,4 +1,5 @@
 import { Movie } from '@root/models';
+import { StringExtensions } from '@root/extensions';
 
 import { Base } from './base';
 
@@ -20,7 +21,7 @@ class MovieService extends Base<Movie> {
     async getByYearAndName(year: number, name: string) : Promise<Movie> {
         let collection = await this.connect();
         return new Promise<Movie>((resolve, reject) => {
-            collection.find({ year, name: new RegExp(name.escapeForRegEx(), 'i') }).sort({ name: 1 }).toArray((error, movies) => {
+            collection.find({ year, name: new RegExp(StringExtensions.escapeForRegEx(name), 'i') }).sort({ name: 1 }).toArray((error, movies) => {
                 if (error) reject(error);
                 if (movies.length === 0) reject(`No movie found with name ${name} and year ${year}.`);
                 else resolve(movies[0]);

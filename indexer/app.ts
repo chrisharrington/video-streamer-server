@@ -1,5 +1,4 @@
 import 'module-alias/register';
-import '@root/extensions';
 
 import { Watcher, WatcherEvent } from '@root/watcher';
 import { File, FileState } from '@root/models';

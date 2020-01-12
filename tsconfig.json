@@ -4,16 +4,20 @@
       "module": "commonjs",
       "moduleResolution": "node",
       "baseUrl": ".",
+      "jsx": "react",
       "paths": {
           "@root/*": ["./*"],
           "@api/*": ["./api/*"],
           "@indexer/*": ["./indexer/*"],
-          "@converter/*": ["./converter/*"]
+          "@converter/*": ["./converter/*"],
+          "@web/*": ["./web/*"]
       },
       "sourceMap": true
     },
     "include": [
-      "**/*.ts"
+      "**/*.ts",
+      "**/*.tsx",
+      "./node_modules/@types/**/*.d.ts"
     ],
     "exclude": [
       "node_modules"

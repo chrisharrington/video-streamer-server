@@ -6,6 +6,7 @@ import ShowService from '@root/data/show';
 import SeasonService from '@root/data/season';
 import EpisodeService from '@root/data/episode';
 import { Episode, Status } from '@root/models';
+import { StringExtensions } from '@root/extensions';
 
 import Base from './base';
 
@@ -45,7 +46,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${name}`);
 
         try {
-            const show = await ShowService.findOne({ name: new RegExp(name.escapeForRegEx(), 'i') });
+            const show = await ShowService.findOne({ name: new RegExp(StringExtensions.escapeForRegEx(name), 'i') });
             if (!show)
                 throw new Error('No show found.');
 
@@ -63,7 +64,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}`);
 
         try {
-            const seasons = await SeasonService.find({ show: new RegExp(show.escapeForRegEx(), 'i') }, { number: 1 });
+            const seasons = await SeasonService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i') }, { number: 1 });
             if (!seasons || seasons.length === 0)
                 throw new Error('No seasons found.');
 
@@ -83,7 +84,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}/${number}`);
 
         try {
-            const regex = new RegExp(show.escapeForRegEx(), 'i')
+            const regex = new RegExp(StringExtensions.escapeForRegEx(show), 'i')
             const [ season, episodes ] = await Promise.all([
                 await SeasonService.findOne({ show: regex, number }),
                 await EpisodeService.find({ show: regex, season: number }, { number: 1 })
@@ -110,7 +111,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}/${season}/episodes`);
 
         try {
-            const episodes = await EpisodeService.find({ show: new RegExp(show.escapeForRegEx(), 'i'), season });
+            const episodes = await EpisodeService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season });
             if (!episodes || episodes.length === 0)
                 throw new Error('No episodes found.');
 
@@ -130,7 +131,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}/${season}/${number}`);
 
         try {
-            const episode = await EpisodeService.findOne({ show: new RegExp(show.escapeForRegEx(), 'i'), season, number });
+            const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
             if (!episode)
                 throw new Error('No episode found.');
 
@@ -150,7 +151,7 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}/${season}/${number}`);
 
         try {
-            const episode = await EpisodeService.findOne({ show: new RegExp(show.escapeForRegEx(), 'i'), season, number });
+            const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
             if (!episode)
                 throw new Error('No episode found.');
 

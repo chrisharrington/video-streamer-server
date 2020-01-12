@@ -1,0 +1,40 @@
+@import 'variables.scss';
+
+.sidebar {
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: $header-height;
+    bottom: 0;
+    width: $sidebar-width;
+    background-color: darken($background-colour, 5%);
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+
+        a {
+            text-decoration: none;
+            color: $font-colour;
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+
+            i, span {
+                @include vertical-centre(50px);
+            }
+
+            span {
+                margin-left: 10px;
+            }
+
+            &:hover {
+                background-color: $hover-colour;
+            }
+        }
+    }
+}

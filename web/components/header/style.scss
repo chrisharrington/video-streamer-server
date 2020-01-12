@@ -1,0 +1,41 @@
+@import 'variables.scss';
+
+header {
+    height: $header-height;
+    width: 100%;
+    position: fixed;
+    z-index: 2;
+    background-color: #222;
+    top: 0;
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+
+        li {
+            float: left;
+            margin-left: 15px;
+
+            &:first-child {
+                margin-left: 0;
+            }
+        }
+
+        a {
+            @include vertical-centre($header-height);
+            text-decoration: none;
+            color: $font-colour;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0 25px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color linear 150ms;
+
+            &:hover {
+                background-color: #333;
+            }
+        }
+    }
+}
