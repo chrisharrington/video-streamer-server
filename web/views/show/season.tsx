@@ -23,10 +23,9 @@ export default class SeasonDetails extends React.Component<SeasonDetailsProps, S
     }
 
     async componentDidMount() {
-        const show = this.props.match.params.name,
+        const show = StringExtensions.fromKebabCase(this.props.match.params.name),
             season = this.props.match.params.season;
-
-        console.log(this.props.match);
+            
         if (!show || !season)
             return;
 

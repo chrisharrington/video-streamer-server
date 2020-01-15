@@ -16,8 +16,8 @@ export default class Shows extends Base {
     initialize(app) {
         app.get('/shows/subtitle/:id', this.getSubtitlesForEpisode.bind(this));
         app.get('/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
-
         app.get('/shows/all', this.getShows.bind(this));
+
         app.get('/shows/:show', this.getShow.bind(this));
         app.get('/shows/:show/seasons', this.getSeasons.bind(this));
         app.get('/shows/:show/:season', this.getSeason.bind(this));
@@ -111,7 +111,8 @@ export default class Shows extends Base {
         console.log(`[server] Request received: GET /shows/${show}/${season}/episodes`);
 
         try {
-            const episodes = await EpisodeService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season });
+            console.log(StringExtensions.escapeForRegEx(show), season);
+            const episodes = await EpisodeService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season }, { number: 1 });
             if (!episodes || episodes.length === 0)
                 throw new Error('No episodes found.');
 

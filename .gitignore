@@ -72,3 +72,6 @@ db/
 
 # RabbitMQ data
 queue/
+
+# Built front end files
+dist/

@@ -8,7 +8,7 @@ export enum WatcherEvent {
 }
 
 export class Watcher {
-    handlers: any;
+    private handlers: any;
 
     constructor(...directories: string[]) {
         this.handlers = {};

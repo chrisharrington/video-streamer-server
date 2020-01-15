@@ -14,12 +14,12 @@ export enum FileState {
 
 export class File {
     path: string;
-    name: string;
+    output: string;
     extensions: string[];
 
-    constructor(filepath?: string) {
+    constructor(filepath?: string, output?: string) {
         this.path = filepath;
-        this.name = path.basename(filepath);
+        this.output = output;
         this.extensions = ['mkv', 'mp4', 'avi', 'wmv', 'm4a', 'webm', 'mpg', 'mov', 'mp2', 'mpeg', 'mp3', 'mpv', 'ogg', 'm4p', 'qt', 'flv', 'swf'];
     }
 
@@ -37,16 +37,29 @@ export class File {
         }
     }
 
-    show() {
-        return this.path.split('/').slice(-3)[0];
+    static create(file: any) : File {
+        const created = new File();
+        Object.keys(file).forEach((key: string) => created[key] = file[key]);
+        return created;
     }
 
-    movie() {
-        return this.path.replace(`.${FileState.Converted}.mp4`, '');
+    static isEpisode(filepath: string) {
+        return /^S?0*(\d+)?[xE]0*(\d+)/i.test(path.parse(filepath).name.substr(0, 6));
     }
 
-    episodeIdentifer() {
-        return this.path.substr(this.path.lastIndexOf('.')+1, 6);
+    static getPathForState(filepath: string, state: FileState) {
+        if (state === FileState.Unprocessed || state === FileState.Valid)
+            throw new Error(`Can't rename file to this state: ${state}, ${filepath}`);
+
+        return this.isEpisode(filepath) ?
+            `${path.dirname(filepath)}/${path.parse(filepath).name.substr(0, 6)}.${state}.mp4` :
+            `${path.dirname(filepath)}/${path.parse(filepath).name}.${state}.mp4`;
+    }
+
+    static getName(filepath: string) {
+        return this.isEpisode(filepath) ?
+            path.parse(filepath).name.substr(0, 6) :
+            filepath.split('/').slice(-2)[0];
     }
 }
 
@@ -168,4 +181,10 @@ export class Message {
         this.payload = payload;
         this.error = error ? JSON.stringify(error) : null;
     }
+}
+
+export enum StreamType {
+    Video = 'video',
+    Audio = 'audio',
+    Subtitle = 'subtitle'
 }

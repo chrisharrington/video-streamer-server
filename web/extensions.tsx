@@ -4,7 +4,7 @@ export class StringExtensions {
     }
     
     static fromKebabCase(value: string) {
-        return value.split('-').map(s => this.capitalize(value)).join(' ');
+        return value.split('-').map(s => this.capitalize(s)).join(' ');
     }
     
     static capitalize(value: string) {

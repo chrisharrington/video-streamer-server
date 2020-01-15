@@ -3,7 +3,7 @@ import * as recursive from 'recursive-readdir';
 import { File } from '@root/models';
 
 export default class Files {
-    filter: (file: File) => boolean;
+    private filter: (file: File) => boolean;
 
     constructor(filter: (file: File) => boolean) {
         this.filter = filter;

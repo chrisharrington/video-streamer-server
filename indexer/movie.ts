@@ -1,5 +1,6 @@
 import getVideoDuration from 'get-video-duration';
 import * as fs from 'fs';
+import * as path from 'path';
 
 import Files from '@root/files';
 import MovieService from '@root/data/movie';
@@ -26,7 +27,7 @@ export class MovieIndexer {
         await this.removeMoviesWithNoFile();
 
         files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
-        console.log(`[movie-indexer] Found ${files.length} video files.`);
+        console.log(`[movie-indexer] Found ${files.length} video file${files.length === 1 ? '' : 's'}.`);
 
         for (var i = 0; i < files.length; i++)
             await this.processFile(files[i]);
@@ -76,7 +77,11 @@ export class MovieIndexer {
                 this.metadataQueue.send(new Message(movie, MessageType.Movie));
             }
 
-            if (movie.subtitlesStatus === Status.Missing) {
+            const subtitlesPath = `${path.dirname(file.path)}/${File.getName(file.path)}.vtt`;
+            if (fs.existsSync(subtitlesPath)) {
+                movie.subtitlesStatus = Status.Fulfilled;
+                movie.subtitles = subtitlesPath;
+            } else if (movie.subtitlesStatus === Status.Missing) {
                 movie.subtitlesStatus = Status.Queued;
                 await this.subtitleQueue.send(new Message(movie, MessageType.Movie));
             }

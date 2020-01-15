@@ -9,7 +9,7 @@ import Config from '@root/config';
 import Queue from '@root/queue';
 import MovieService from '@root/data/movie';
 import EpisodeService from '@root/data/episode';
-import { Media, Movie, Episode, Status, Message, MessageType } from '@root/models';
+import { Media, Movie, Episode, Status, Message, MessageType, File } from '@root/models';
 
 export class Subtitler {
     private static api: OpenSubtitles;
@@ -32,7 +32,7 @@ export class Subtitler {
 
             movie = await this.searchForSubtitles(movie, {
                 query: `${movie.name} ${movie.year}`
-            }, message.type, `${path.dirname(movie.path)}/en.vtt`);
+            }, message.type, `${path.dirname(movie.path)}/${File.getName(movie.path)}.vtt`);
     
             await MovieService.updateOne(movie);
         } else if (message.type === MessageType.Episode) {

@@ -106,12 +106,11 @@ export default class Movies extends Base {
                 response.sendStatus(404);
             }
 
-            const path = movie.path.split('/').slice(0, -1).join('/') + '/en.vtt';
             response.writeHead(200, {
-                'Content-Length': fs.statSync(path).size,
+                'Content-Length': fs.statSync(movie.subtitles).size,
                 'Content-Type': 'text/vvt',
             });
-            fs.createReadStream(path).pipe(response);
+            fs.createReadStream(movie.subtitles).pipe(response);
         } catch (e) {
             console.error(`[server] Request failed: GET /movies/subtitle/:year/:name`);
             console.error(e);

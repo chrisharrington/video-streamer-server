@@ -2,4 +2,5 @@ import 'module-alias/register';
 
 import { Subtitler } from './subtitler';
 
-Subtitler.initialize();
+console.log('[subtitler] Disabled.');
+//Subtitler.initialize();

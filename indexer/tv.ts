@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import getVideoDuration from 'get-video-duration';
 
 import Files from '@root/files';
@@ -140,7 +141,11 @@ export class TvIndexer {
             this.metadataQueue.send(new Message(episode, MessageType.Episode));
         }
 
-        if (episode.subtitlesStatus === Status.Missing) {
+        const subtitlesPath = `${path.dirname(file.path)}/${File.getName(file.path)}.vtt`;
+        if (fs.existsSync(subtitlesPath)) {
+            episode.subtitlesStatus = Status.Fulfilled;
+            episode.subtitles = subtitlesPath;
+        } else if (episode.subtitlesStatus === Status.Missing) {
             episode.subtitlesStatus = Status.Queued;
             this.subtitleQueue.send(new Message(episode, MessageType.Episode));
         }

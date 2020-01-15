@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
+    "typecheck": "./node_modules/.bin/tsc",
     "api": "./node_modules/.bin/tsc && node api/app.js",
     "api-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn api\"",
     "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
@@ -17,8 +18,7 @@
     "web": "./node_modules/.bin/webpack --config ./web/webpack.config.js",
     "web-dev": "./node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --config ./web/webpack.config.js",
     "cast": "./node_modules/.bin/tsc && node cast.js",
-    "cast-dev": "./node_modules/.bin/tsc && nodemon -L -e ts --exec \"yarn cast\"",
-    "blah": "./node_modules/.bin/tsc"
+    "cast-dev": "./node_modules/.bin/tsc && nodemon -L -e ts --exec \"yarn cast\""
   },
   "repository": {
     "type": "git",
@@ -43,6 +43,7 @@
     "cors": "^2.8.5",
     "dayjs": "^1.8.18",
     "express": "^4.16.3",
+    "ffprobe": "^1.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "get-video-duration": "^1.0.3",
     "handbrake-js": "^5.0.0",
@@ -53,6 +54,7 @@
     "mongodb": "^3.3.3",
     "node-fetch": "^2.6.0",
     "node-watch": "^0.6.3",
+    "nodecastor": "^0.1.9",
     "npm": "^6.12.0",
     "opensubtitles-api": "^5.1.0",
     "react": "^16.12.0",

@@ -19,12 +19,4 @@ import Queue from '@root/queue';
 
     await tvIndexer.run();
     await movieIndexer.run();
-
-    const movieWatcher = new Watcher(...movieDirectories);
-    movieWatcher.on(WatcherEvent.Remove, (file: File) => file.is(FileState.Converted) && movieIndexer.removeMoviesWithNoFile());
-    movieWatcher.on(WatcherEvent.Update, (file: File) => file.is(FileState.Converted) && movieIndexer.run(file));
-
-    const tvWatcher = new Watcher(...tvDirectories);
-    tvWatcher.on(WatcherEvent.Remove, (file: File) => file.is(FileState.Converted) && tvIndexer.removeEpisodesWithNoFile());
-    tvWatcher.on(WatcherEvent.Update, (file: File) => file.is(FileState.Converted) && tvIndexer.run(file));
 })();
