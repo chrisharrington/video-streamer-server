@@ -26,6 +26,7 @@ services:
     restart: unless-stopped
     ports:
       - 8101:8101
+      - 8009:8009
     volumes:
       - ~/media:/media
       - ./:/app

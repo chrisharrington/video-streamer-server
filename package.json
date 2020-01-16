@@ -6,19 +6,19 @@
   "scripts": {
     "typecheck": "./node_modules/.bin/tsc",
     "api": "./node_modules/.bin/tsc && node api/app.js",
-    "api-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn api\"",
+    "api-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node api/app.js\"",
     "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
-    "indexer-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn indexer\"",
+    "indexer-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node indexer/app.js\"",
     "converter": "./node_modules/.bin/tsc && node converter/app.js",
-    "converter-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn converter\"",
+    "converter-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node converter/app.js\"",
     "subtitler": "./node_modules/.bin/tsc && node subtitler/app.js",
-    "subtitler-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn subtitler\"",
+    "subtitler-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node subtitler/app.js\"",
     "metadata": "./node_modules/.bin/tsc && node metadata/app.js",
-    "metadata-dev": "./node_modules/.bin/nodemon -L -e ts --exec \"yarn metadata\"",
+    "metadata-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node metadata/app.js\"",
     "web": "./node_modules/.bin/webpack --config ./web/webpack.config.js",
     "web-dev": "./node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --config ./web/webpack.config.js",
     "cast": "./node_modules/.bin/tsc && node cast.js",
-    "cast-dev": "./node_modules/.bin/tsc && nodemon -L -e ts --exec \"yarn cast\""
+    "cast-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node ./cast.js\""
   },
   "repository": {
     "type": "git",
@@ -40,6 +40,8 @@
   "dependencies": {
     "amqplib": "^0.5.5",
     "body-parser": "^1.19.0",
+    "castv2": "^0.1.10",
+    "castv2-client": "^1.2.0",
     "cors": "^2.8.5",
     "dayjs": "^1.8.18",
     "express": "^4.16.3",
@@ -89,6 +91,7 @@
     "style-loader": "^1.1.2",
     "thread-loader": "^2.1.3",
     "ts-loader": "^6.2.1",
+    "tsc-watch": "^4.0.0",
     "typescript": "^3.6.4",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
