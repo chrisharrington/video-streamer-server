@@ -1,6 +1,10 @@
 import 'module-alias/register';
 
+import Config from '@root/config';
+
 import { Subtitler } from './subtitler';
 
-console.log('[subtitler] Disabled.');
-//Subtitler.initialize();
+if (Config.enabled.subtitler)
+    Subtitler.initialize();
+else
+    console.log('[subtitler] Disabled.');

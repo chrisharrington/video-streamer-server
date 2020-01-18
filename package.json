@@ -15,8 +15,8 @@
     "subtitler-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node subtitler/app.js\"",
     "metadata": "./node_modules/.bin/tsc && node metadata/app.js",
     "metadata-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node metadata/app.js\"",
-    "web": "./node_modules/.bin/webpack --config ./web/webpack.config.js",
-    "web-dev": "./node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --config ./web/webpack.config.js",
+    "web": "./node_modules/.bin/webpack --config ./apps/web/webpack.config.js",
+    "web-dev": "./node_modules/.bin/webpack-dev-server --hot --host 0.0.0.0 --config ./apps/web/webpack.config.js",
     "cast": "./node_modules/.bin/tsc && node cast.js",
     "cast-dev": "./node_modules/.bin/tsc-watch --onSuccess \"node ./cast.js\""
   },
@@ -35,7 +35,8 @@
     "@api": "./api/",
     "@indexer": "./indexer/",
     "@converter": "./converter/",
-    "@web": "./web/"
+    "@metadata": "./metadata/",
+    "@subtitler": "./subtitler/"
   },
   "dependencies": {
     "amqplib": "^0.5.5",
@@ -52,6 +53,7 @@
     "history": "^4.10.1",
     "install": "^0.12.1",
     "json2typescript": "^1.2.3",
+    "mdns": "^2.5.1",
     "module-alias": "^2.1.0",
     "mongodb": "^3.3.3",
     "node-fetch": "^2.6.0",

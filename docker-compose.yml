@@ -24,9 +24,7 @@ services:
       dockerfile: ./api/Dockerfile
     container_name: video-streamer-api
     restart: unless-stopped
-    ports:
-      - 8101:8101
-      - 8009:8009
+    network_mode: host
     volumes:
       - ~/media:/media
       - ./:/app
@@ -84,16 +82,3 @@ services:
     depends_on:
       - queue
       - data
-  web:
-    build:
-      context: .
-      dockerfile: ./web/Dockerfile
-    container_name: video-streamer-web
-    restart: unless-stopped
-    ports:
-      - 80:8080
-      - 1606:1606
-    volumes:
-      - ./:/app
-    depends_on:
-      - api

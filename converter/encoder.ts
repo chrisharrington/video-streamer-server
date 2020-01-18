@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as ffprobe from 'ffprobe';
+import * as path from 'path';
 
 import { File, FileState, StreamType } from '@root/models';
 
@@ -9,7 +10,7 @@ const FfmpegCommand = require('fluent-ffmpeg');
 //     -hwaccel nvdec \
 //     -i "/media/movies/2 Fast 2 Furious (2003)/2 Fast 2 Furious (2003).mp4" \
 //     -vsync 0 \
-//     -acodec aac \
+//     -acodec libmp3lame \
 //     -c:v h264_nvenc \
 //     -b:v 5M \
 //     output.mp4
@@ -33,11 +34,20 @@ export default class Encoder {
                     .outputOptions(
                         '-vsync', '0',
                         '-c:v', 'h264_nvenc',
-                        '-acodec', 'aac',
+                        '-acodec', 'libmp3lame',
                         '-b:v', '5M',
+                        '-sn',
                         '-map', '0:' + (await this.getStreamIndex(file, stream => stream.codec_type === StreamType.Video)),
                         '-map', '0:' + (await this.getStreamIndex(file, stream => stream.codec_type === StreamType.Audio && stream.tags.language === 'eng'))
                     );
+
+                // const command = new FfmpegCommand(file.path)
+                //     .output(`${path.dirname(file.path)}/${path.parse(file.path).name.split('.')[0]}.blah.mp4`)
+                //     .outputOptions(
+                //         '-c', 'copy',
+                //         '-sn',
+                //         '-acodec', 'libmp3lame'
+                //     );
 
                 command.on('start', () => console.log(`[converter] Converting: ${file.path}`));
                 command.on('error', (error: string) => this.onError(error, reject));
@@ -64,8 +74,8 @@ export default class Encoder {
     }
 
     private onEnd(file: File, resolve: () => void) {
-        this.deleteFiles(file.path);
-        fs.renameSync(File.getPathForState(file.output, FileState.Converting), File.getPathForState(file.output, FileState.Converted));
+        // this.deleteFiles(file.path);
+        // fs.renameSync(File.getPathForState(file.output, FileState.Converting), File.getPathForState(file.output, FileState.Converted));
         console.log(`[converter] Finished processing ${file.path}.`);
         resolve();
     }

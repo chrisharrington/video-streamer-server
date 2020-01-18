@@ -4,6 +4,7 @@ import * as bodyParser from 'body-parser';
 
 import Movies from './movies';
 import Shows from './shows';
+import Devices from './devices';
 
 export default class Server {
     port: number;
@@ -19,8 +20,9 @@ export default class Server {
 
         new Movies().initialize(app);
         new Shows().initialize(app);
+        new Devices().initialize(app);
 
-        app.listen(this.port, () => console.log(`[server] Listening on port ${this.port}...`));
+        app.listen(this.port, () => console.log(`[api] Listening on port ${this.port}...`));
     }
 }
 

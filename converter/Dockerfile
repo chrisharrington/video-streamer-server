@@ -11,7 +11,7 @@ ENV NVIDIA_REQUIRE_CUDA=cuda>=8.0
 
 # Install dependencies
 RUN apt-get update -y && \
-    apt-get install git nodejs npm wget yasm pkgconf libzvbi-dev -y && \
+    apt-get install git nodejs npm wget yasm pkgconf libzvbi-dev libmp3lame-dev -y && \
     npm install yarn -g
 
 # Install nv-codec-headers
@@ -23,7 +23,7 @@ RUN git clone https://github.com/FFmpeg/nv-codec-headers.git && \
 # Install FFMPEG
 RUN git clone https://git.ffmpeg.org/ffmpeg.git && \
     cd ffmpeg && \
-    ./configure --enable-libzvbi --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
+    ./configure --enable-libzvbi --enable-libmp3lame --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
     make -j 4 && \
     make install && \
     cd ..

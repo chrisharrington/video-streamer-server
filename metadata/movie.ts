@@ -14,10 +14,12 @@ class MovieMetadata extends Metadata {
                 throw new Error(`[movie-indexer] Movie missing either name or year. ${JSON.stringify(movie)}`);
                 
             const search = (await this.movieSearch(movie)).results[0],
-                details = await this.movieDetails(search.id);
+                details = await this.movieDetails(search.id),
+                configuration = await this.configuration;
 
             movie.externalId = search.id;
-            movie.poster = `${(await this.configuration).base_url}w342${details.poster_path}`;
+            movie.poster = `${configuration.base_url}w342${details.poster_path}`;
+            movie.backdrop = `${configuration.base_url}original${details.backdrop_path}`
             movie.synopsis = details.overview;
             movie.genres = details.genres.map(genre => genre.name);
             return movie;

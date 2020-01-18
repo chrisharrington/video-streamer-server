@@ -1,68 +1,9 @@
 import * as mdns from 'mdns';
-import { Client, DefaultMediaReceiver } from 'castv2-client';
+
+import Device from './device';
 
 enum ServiceType {
     Chromecast = 'Chromecast'
-}
-
-class Device {
-    id: string;
-    name: string;
-    type: string;
-    host: string;
-
-    static fromRaw(raw: any) : Device {
-        const device = new Device();
-        device.id = raw.txtRecord.id;
-        device.name = raw.txtRecord.fn;
-        device.type = raw.txtRecord.md;
-        device.host = raw.host;
-        return device;
-    }
-
-    async cast(url: string) {
-        console.log(DefaultMediaReceiver);
-
-        const client = new Client();
-
-        client.on('error', error => console.log(error));
-
-        client.connect(this.host, () => {
-            client.launch(DefaultMediaReceiver, (error, player) => {
-                if (error)
-                    throw new Error(error);
-
-                var media = {
-                    contentId: 'http://chrisharrington.me:8101/movies/play/2014/Chef',
-                    contentType: 'video/mp4',
-                    streamType: 'BUFFERED',
-                    metadata: {
-                        type: 0,
-                        metadataType: 0,
-                        title: "Big Buck Bunny", 
-                        images: [
-                            { url: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg' }
-                        ]
-                    }
-                };
-
-                player.on('status', function(status) {
-                    console.log('status broadcast playerState=%s', status.playerState);
-                });
-
-                player.on('error', function(error) {
-                    console.log(error);
-                });
-
-                player.load(media, { autoplay: true }, (error, status) => {
-                    if (error)
-                        throw new Error(error);
-
-                    console.log(status);
-                });
-            });
-        });
-    }
 }
 
 interface DeviceMap {

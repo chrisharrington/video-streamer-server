@@ -20,17 +20,18 @@ export default class Converter {
             watcher = new Watcher(directory),
             files = await fileManager.find(directory);
 
-        this.queue.receive(async (message: Message) => await this.receive(message));
+        // this.queue.receive(async (message: Message) => await this.receive(message));
 
-        for (var i = 0; i < files.length; i++)
-            await this.send(files[i]);
+        // for (var i = 0; i < files.length; i++)
+        //     await this.send(files[i]);
 
-        watcher.on(WatcherEvent.Update, (file: File) => {
-            if (file.is(FileState.Valid) && file.is(FileState.Unprocessed))
-                this.send(file);
-        });
+        // watcher.on(WatcherEvent.Update, (file: File) => {
+        //     if (file.is(FileState.Valid) && file.is(FileState.Unprocessed))
+        //         this.send(file);
+        // });
 
-        console.log(`[converter] Initialized. Listening for messages...`);
+        // console.log(`[converter] Initialized. Listening for messages...`);
+        console.log('[converter] Disabled.');
     }
 
     private static async send(file: File) {
@@ -48,7 +49,7 @@ export default class Converter {
         try {
             await Promise.all([
                 this.encoder.run(file),
-                this.subtitler.run(file)
+                // this.subtitler.run(file)
             ]);
         } catch (e) {
             console.error(e);

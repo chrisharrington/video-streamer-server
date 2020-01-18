@@ -9,8 +9,7 @@
           "@root/*": ["./*"],
           "@api/*": ["./api/*"],
           "@indexer/*": ["./indexer/*"],
-          "@converter/*": ["./converter/*"],
-          "@web/*": ["./web/*"]
+          "@converter/*": ["./converter/*"]
       },
       "sourceMap": true
     },
@@ -23,5 +22,6 @@
       "node_modules"
     ],
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }

@@ -12,6 +12,26 @@ export enum FileState {
     Converted = 'done'
 }
 
+export enum MessageType {
+    Movie = 'movie',
+    Show = 'show',
+    Season = 'season',
+    Episode = 'episode',
+    Other = 'other'
+}
+
+export enum Status {
+    Missing = 'missing',
+    Queued = 'queued',
+    Fulfilled = 'fulfilled'
+}
+
+export enum StreamType {
+    Video = 'video',
+    Audio = 'audio',
+    Subtitle = 'subtitle'
+}
+
 export class File {
     path: string;
     output: string;
@@ -63,12 +83,6 @@ export class File {
     }
 }
 
-export enum Status {
-    Missing = 'missing',
-    Queued = 'queued',
-    Fulfilled = 'fulfilled'
-}
-
 export class Media extends Id {
     path: string;
     runtime: number;
@@ -92,6 +106,7 @@ export class Movie extends Media {
     externalId: string;
     name: string;
     poster: string;
+    backdrop: string;
     synopsis: string;
     year: number;
     genres: string[];
@@ -163,14 +178,6 @@ export class Episode extends Media {
     }
 }
 
-export enum MessageType {
-    Movie = 'movie',
-    Show = 'show',
-    Season = 'season',
-    Episode = 'episode',
-    Other = 'other'
-}
-
 export class Message {
     type: MessageType;
     payload: any;
@@ -183,8 +190,25 @@ export class Message {
     }
 }
 
-export enum StreamType {
-    Video = 'video',
-    Audio = 'audio',
-    Subtitle = 'subtitle'
+export class Castable {
+    path: string;
+    name: string;
+    poster: string;
+    backdrop: string;
+
+    static fromMovie(movie: Movie) : Castable {
+        const castable = new Castable();
+        castable.name = movie.name;
+        castable.poster = movie.poster;
+        castable.backdrop = movie.backdrop;
+        return castable;
+    }
+
+    static fromEpisode(episode: Episode, show: Show) : Castable {
+        const castable = new Castable();
+        castable.name = episode.name;
+        castable.poster = show.poster;
+        castable.backdrop = show.backdrop;
+        return castable;
+    }
 }

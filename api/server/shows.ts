@@ -28,14 +28,14 @@ export default class Shows extends Base {
     }
 
     private async getShows(_, response: express.Response) {
-        console.log('[server] Request received: GET /shows');
+        console.log('[api] Request received: GET /shows');
 
         try {
             const shows = await ShowService.get();
-            console.log(`[server] Request succeeded. GET /shows. Found ${shows.length} shows.`);
+            console.log(`[api] Request succeeded. GET /shows. Found ${shows.length} shows.`);
             response.status(200).send(shows);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows.`);
+            console.error(`[api] Request failed: GET /shows.`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -43,17 +43,17 @@ export default class Shows extends Base {
 
     private async getShow(request: express.Request, response: express.Response) {
         const name = request.params.show;
-        console.log(`[server] Request received: GET /shows/${name}`);
+        console.log(`[api] Request received: GET /shows/${name}`);
 
         try {
             const show = await ShowService.findOne({ name: new RegExp(StringExtensions.escapeForRegEx(name), 'i') });
             if (!show)
                 throw new Error('No show found.');
 
-            console.log(`[server] Request succeeded. GET /shows/${name}. Found ${show.name}`);
+            console.log(`[api] Request succeeded. GET /shows/${name}. Found ${show.name}`);
             response.status(200).send(show);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${name}`);
+            console.error(`[api] Request failed: GET /shows/${name}`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -61,17 +61,17 @@ export default class Shows extends Base {
 
     private async getSeasons(request: express.Request, response: express.Response) {
         const show = request.params.show;
-        console.log(`[server] Request received: GET /shows/${show}`);
+        console.log(`[api] Request received: GET /shows/${show}`);
 
         try {
             const seasons = await SeasonService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i') }, { number: 1 });
             if (!seasons || seasons.length === 0)
                 throw new Error('No seasons found.');
 
-            console.log(`[server] Request succeeded. GET /shows/${show}/seasons. Found ${seasons.length} seasons.`);
+            console.log(`[api] Request succeeded. GET /shows/${show}/seasons. Found ${seasons.length} seasons.`);
             response.status(200).send(seasons);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${show}/seasons`);
+            console.error(`[api] Request failed: GET /shows/${show}/seasons`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -81,7 +81,7 @@ export default class Shows extends Base {
         const show = request.params.show,
             number = parseInt(request.params.season);
 
-        console.log(`[server] Request received: GET /shows/${show}/${number}`);
+        console.log(`[api] Request received: GET /shows/${show}/${number}`);
 
         try {
             const regex = new RegExp(StringExtensions.escapeForRegEx(show), 'i')
@@ -95,10 +95,10 @@ export default class Shows extends Base {
             if (!episodes || episodes.length === 0)
                 throw new Error('No episodes found.');
 
-            console.log(`[server] Request succeeded. GET /shows/${show}/${number}. Found one season.`);
+            console.log(`[api] Request succeeded. GET /shows/${show}/${number}. Found one season.`);
             response.status(200).send({ season, episodes });
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${show}/${number}`);
+            console.error(`[api] Request failed: GET /shows/${show}/${number}`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -108,7 +108,7 @@ export default class Shows extends Base {
         const show = request.params.show,
             season = parseInt(request.params.season);
 
-        console.log(`[server] Request received: GET /shows/${show}/${season}/episodes`);
+        console.log(`[api] Request received: GET /shows/${show}/${season}/episodes`);
 
         try {
             console.log(StringExtensions.escapeForRegEx(show), season);
@@ -118,7 +118,7 @@ export default class Shows extends Base {
 
             response.status(200).send(episodes);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${show}/${season}/episodes`);
+            console.error(`[api] Request failed: GET /shows/${show}/${season}/episodes`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -129,7 +129,7 @@ export default class Shows extends Base {
             season = parseInt(request.params.season),
             number = parseInt(request.params.episode);
 
-        console.log(`[server] Request received: GET /shows/${show}/${season}/${number}`);
+        console.log(`[api] Request received: GET /shows/${show}/${season}/${number}`);
 
         try {
             const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
@@ -138,7 +138,7 @@ export default class Shows extends Base {
 
             response.status(200).send(episode);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${show}/${season}/${number}`);
+            console.error(`[api] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -149,7 +149,7 @@ export default class Shows extends Base {
             season = parseInt(request.params.season),
             number = parseInt(request.params.episode);
 
-        console.log(`[server] Request received: GET /shows/${show}/${season}/${number}`);
+        console.log(`[api] Request received: GET /shows/${show}/${season}/${number}`);
 
         try {
             const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
@@ -158,26 +158,26 @@ export default class Shows extends Base {
 
             this.stream(request, response, episode.path);
         } catch (e) {
-            console.error(`[server] Request failed: GET /shows/${show}/${season}/${number}`);
+            console.error(`[api] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);
             response.status(500).send(e);
         }
     }
 
     private async saveProgress(request: express.Request, response: express.Response) {
-        console.log('[server] Request received: POST /movies/progress', request.body);
+        console.log('[api] Request received: POST /movies/progress', request.body);
 
         try {
             let episode: Episode = await EpisodeService.findById(request.body.id);
             if (!episode) {
-                console.error(`[server] Error: no episode found: ${request.body.id}.`);
+                console.error(`[api] Error: no episode found: ${request.body.id}.`);
                 response.sendStatus(404);
                 return;
             }
 
             episode.progress = parseInt(request.body.secondsFromStart);
             if (isNaN(episode.progress)) {
-                console.error(`[server] Invalid progress: ${request.body.secondsFromStart}`);
+                console.error(`[api] Invalid progress: ${request.body.secondsFromStart}`);
                 response.sendStatus(400);
                 return;
             }
@@ -185,7 +185,7 @@ export default class Shows extends Base {
             await EpisodeService.updateOne(episode);
             response.sendStatus(200);
         } catch (e) {
-            console.error(`[server] Request failed: POST /episode/progress.`);
+            console.error(`[api] Request failed: POST /episode/progress.`);
             console.error(e);
             response.status(500).send(e);
         }
@@ -193,12 +193,12 @@ export default class Shows extends Base {
 
     private async getSubtitlesForEpisode(request: express.Request, response: express.Response) {
         const id = request.params.id;
-        console.log(`[server] Request received: GET /shows/subtitle/${id}`);
+        console.log(`[api] Request received: GET /shows/subtitle/${id}`);
 
         try {
             const episode = await EpisodeService.findById(id);
             if (!episode) {
-                console.error(`[server] Episode not found:`, id);
+                console.error(`[api] Episode not found:`, id);
                 response.sendStatus(404);
                 return;
             }
@@ -207,7 +207,7 @@ export default class Shows extends Base {
 
             const file = `${path.dirname(episode.path)}/${path.basename(episode.path).substr(0, 6)}.vtt`;
             if (episode.subtitlesStatus !== Status.Fulfilled || !fs.existsSync(file)) {
-                console.error(`[server] Subtitles for episode not found: ${file}`);
+                console.error(`[api] Subtitles for episode not found: ${file}`);
                 response.sendStatus(404);
                 return;
             }
