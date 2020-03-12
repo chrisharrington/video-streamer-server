@@ -206,7 +206,7 @@ export default class Shows extends Base {
             console.log(episode.path, path.basename(episode.path).substr(0, 6));
 
             const file = `${path.dirname(episode.path)}/${path.basename(episode.path).substr(0, 6)}.vtt`;
-            if (episode.subtitlesStatus !== Status.Fulfilled || !fs.existsSync(file)) {
+            if (episode.subtitlesStatus !== Status.Processed || !fs.existsSync(file)) {
                 console.error(`[api] Subtitles for episode not found: ${file}`);
                 response.sendStatus(404);
                 return;

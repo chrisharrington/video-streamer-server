@@ -6,13 +6,5 @@ import Server from '@api/server/server';
 if (!Config.enabled.api) {
     console.log('[api] Disabled.');
 } else {
-    [
-        new Server(Config.serverPort)
-    ].forEach(async task => {
-        try {
-            await task.run();
-        } catch (e) {
-            console.error(e);
-        }
-    });
+    new Server(Config.serverPort).run();
 }

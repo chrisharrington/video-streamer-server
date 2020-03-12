@@ -2,27 +2,24 @@ version: '2.3'
 services:
   queue:
     image: rabbitmq:3-management
-    container_name: video-streamer-queue
-    hostname: video-streamer-queue
-    ports:
-      - '5672:5672'
-      - '15672:15672'
+    container_name: showveo-queue
+    hostname: showveo-queue
+    network_mode: host
     restart: unless-stopped
     volumes:
       - /queue:/var/lib/rabbitmq
   data:
     image: 'mongo'
-    container_name: video-streamer-database
+    container_name: showveo-database
     restart: unless-stopped
-    ports:
-      - '27017:27017'
+    network_mode: host
     volumes:
       - ./db:/data/db
   api:
     build:
       context: .
       dockerfile: ./api/Dockerfile
-    container_name: video-streamer-api
+    container_name: showveo-api
     restart: unless-stopped
     network_mode: host
     volumes:
@@ -31,15 +28,19 @@ services:
     depends_on:
       - queue
       - data
+    ports:
+      - 9000:9229
   indexer:
     build:
       context: .
       dockerfile: ./indexer/Dockerfile
-    container_name: video-streamer-indexer
+    container_name: showveo-indexer
     restart: unless-stopped
     volumes:
       - ~/media:/media
       - ./:/app
+    ports:
+      - 9001:9229
     depends_on:
       - queue
       - data
@@ -47,7 +48,7 @@ services:
     build:
       context: .
       dockerfile: ./converter/Dockerfile
-    container_name: video-streamer-converter
+    container_name: showveo-converter
     restart: unless-stopped
     runtime: nvidia
     environment:
@@ -56,6 +57,8 @@ services:
       - /usr/local/cuda:/cuda
       - ~/media:/media
       - ./:/app
+    ports:
+      - 9002:9229
     depends_on:
       - queue
       - data
@@ -63,11 +66,13 @@ services:
     build:
       context: .
       dockerfile: ./subtitler/Dockerfile
-    container_name: video-streamer-subtitler
+    container_name: showveo-subtitler
     restart: unless-stopped
     volumes:
       - ~/media:/media
       - ./:/app
+    ports:
+      - 9003:9229
     depends_on:
       - queue
       - data
@@ -75,10 +80,12 @@ services:
     build:
       context: .
       dockerfile: ./metadata/Dockerfile
-    container_name: video-streamer-metadata
+    container_name: showveo-metadata
     restart: unless-stopped
     volumes:
       - ./:/app
+    ports:
+      - 9004:9229
     depends_on:
       - queue
       - data

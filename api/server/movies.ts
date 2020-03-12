@@ -36,7 +36,7 @@ export default class Movies extends Base {
     
         try {
             let movie = await MovieService.getByYearAndName(parseInt(request.params.year), request.params.name);
-            console.log(`[api] Request succeeded. GET /movies/:year/:name. Found movie:`, JSON.stringify(movie, null, 4));
+            console.log(`[api] Request succeeded. GET /movies/:year/:name. Found movie:`, movie.name);
             response.status(200).send(this.sanitize(movie));
         } catch (e) {
             console.error(`[api] Request failed: GET /movies/:year/:name.`);
@@ -87,8 +87,7 @@ export default class Movies extends Base {
                 response.sendStatus(404);
             }
 
-            this.stream(request, response, '/media/output.mp4');
-            // this.stream(request, response, movie.path);
+            this.stream(request, response, movie.path);
         } catch (e) {
             console.error('[api] Request failed: GET /movies/play/:year/:name');
             console.error(e);

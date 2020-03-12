@@ -1,5 +1,7 @@
 import * as path from 'path';
 
+import Config from '@root/config';
+
 export class Id {
     _id: string;
 }
@@ -21,9 +23,9 @@ export enum MessageType {
 }
 
 export enum Status {
-    Missing = 'missing',
+    Unprocessed = 'unprocessed',
     Queued = 'queued',
-    Fulfilled = 'fulfilled'
+    Processed = 'processed'
 }
 
 export enum StreamType {
@@ -37,10 +39,14 @@ export class File {
     output: string;
     extensions: string[];
 
-    constructor(filepath?: string, output?: string) {
-        this.path = filepath;
-        this.output = output;
+    constructor(path?: string, output?: string) {
+        this.path = path;
+        this.output = output || path;
         this.extensions = ['mkv', 'mp4', 'avi', 'wmv', 'm4a', 'webm', 'mpg', 'mov', 'mp2', 'mpeg', 'mp3', 'mpv', 'ogg', 'm4p', 'qt', 'flv', 'swf'];
+    }
+
+    isVideoFile() {
+        return this.extensions.some((extension: string) => this.path.endsWith(extension));
     }
 
     is(state: FileState) {
@@ -55,12 +61,6 @@ export class File {
             default:
                 return path.endsWith(`${state}.mp4`);
         }
-    }
-
-    static create(file: any) : File {
-        const created = new File();
-        Object.keys(file).forEach((key: string) => created[key] = file[key]);
-        return created;
     }
 
     static isEpisode(filepath: string) {
@@ -92,12 +92,13 @@ export class Media extends Id {
 
     subtitlesStatus: Status;
     metadataStatus: Status;
+    conversionStatus: Status;
 
     constructor() {
         super();
 
-        this.metadataStatus = Status.Missing;
-        this.subtitlesStatus = Status.Missing;
+        this.metadataStatus = Status.Unprocessed;
+        this.subtitlesStatus = Status.Unprocessed;
         this.subtitlesOffset = 0;
     }
 }
@@ -140,7 +141,7 @@ export class Show extends Id {
     constructor(name?: string) {
         super();
         this.name = name;
-        this.metadataStatus = Status.Missing;
+        this.metadataStatus = Status.Unprocessed;
     }
 }
 
@@ -159,7 +160,7 @@ export class Season extends Id {
         super();
         this.number = number;
         this.show = show;
-        this.metadataStatus = Status.Missing;
+        this.metadataStatus = Status.Unprocessed;
     }
 }
 
@@ -191,21 +192,23 @@ export class Message {
 }
 
 export class Castable {
-    path: string;
+    url: string;
     name: string;
     poster: string;
     backdrop: string;
 
-    static fromMovie(movie: Movie) : Castable {
+    static fromMovie(movie: Movie, url: string) : Castable {
         const castable = new Castable();
+        castable.url = url;
         castable.name = movie.name;
         castable.poster = movie.poster;
         castable.backdrop = movie.backdrop;
         return castable;
     }
 
-    static fromEpisode(episode: Episode, show: Show) : Castable {
+    static fromEpisode(episode: Episode, show: Show, url: string) : Castable {
         const castable = new Castable();
+        castable.url = url;
         castable.name = episode.name;
         castable.poster = show.poster;
         castable.backdrop = show.backdrop;

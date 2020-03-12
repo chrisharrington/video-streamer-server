@@ -1,6 +1,5 @@
 import getVideoDuration from 'get-video-duration';
 import * as fs from 'fs';
-import * as path from 'path';
 
 import Files from '@root/files';
 import MovieService from '@root/data/movie';
@@ -13,12 +12,14 @@ export class MovieIndexer {
     fileManager: Files;
     subtitleQueue: Queue;
     metadataQueue: Queue;
+    conversionQueue: Queue;
     
-    constructor(subtitleQueue: Queue, metadataQueue: Queue, paths: string[]) {
+    constructor(subtitleQueue: Queue, metadataQueue: Queue, conversionQueue: Queue, paths: string[]) {
         this.subtitleQueue = subtitleQueue;
         this.metadataQueue = metadataQueue;
+        this.conversionQueue = conversionQueue;
         this.paths = paths;
-        this.fileManager = new Files((file: File) => file.is(FileState.Converted));
+        this.fileManager = new Files((file: File) => file.isVideoFile());
     }
 
     async run(...files: File[]) : Promise<void> {
@@ -36,9 +37,11 @@ export class MovieIndexer {
 
         const watcher = new Watcher(...this.paths);
         watcher.on(WatcherEvent.Update, async (file: File) => {
-            if (file.is(FileState.Converted))
+            if (file.isVideoFile())
                 await this.processFile(file);
         });
+
+        console.log(`[movie-indexer] Watching for file changes...`);
     }
     
     async removeMoviesWithNoFile() {
@@ -64,26 +67,24 @@ export class MovieIndexer {
                 movie.progress = 0;
                 movie.runtime = await getVideoDuration(file.path);
                 movie.subtitles = null;
-                movie.subtitlesOffset = 0;
-                movie.subtitlesStatus = Status.Missing;
-                movie.metadataStatus = Status.Missing;
+                movie.subtitlesStatus = Status.Unprocessed;
+                movie.metadataStatus = Status.Unprocessed;
+                movie.conversionStatus = Status.Unprocessed;
                 await MovieService.insertOne(movie);
             }
 
             movie.path = file.path;
 
-            if (movie.metadataStatus === Status.Missing) {
+            if (movie.metadataStatus === Status.Unprocessed) {
                 movie.metadataStatus = Status.Queued;
+                console.log(`[movie-indexer] Enqueuing metadata request for ${movie.name}.`);
                 this.metadataQueue.send(new Message(movie, MessageType.Movie));
             }
 
-            const subtitlesPath = `${path.dirname(file.path)}/${File.getName(file.path)}.vtt`;
-            if (fs.existsSync(subtitlesPath)) {
-                movie.subtitlesStatus = Status.Fulfilled;
-                movie.subtitles = subtitlesPath;
-            } else if (movie.subtitlesStatus === Status.Missing) {
-                movie.subtitlesStatus = Status.Queued;
-                await this.subtitleQueue.send(new Message(movie, MessageType.Movie));
+            if (movie.conversionStatus === Status.Unprocessed) {
+                movie.conversionStatus = Status.Queued;
+                console.log(`[movie-indexer] Enqueuing conversion request for ${movie.name}.`);
+                this.conversionQueue.send(new Message(movie, MessageType.Movie));
             }
 
             await MovieService.updateOne(movie);

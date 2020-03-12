@@ -42,7 +42,7 @@ export default class Metadata {
     private static async handleMovie(movie: Movie) : Promise<void> {
         try {
             movie = await MovieMetadata.getMovie(movie);
-            movie.metadataStatus = Status.Fulfilled;
+            movie.metadataStatus = Status.Processed;
             await MovieService.updateOne(movie);
             
             console.log(`[metadata] Metadata retrieved for movie: ${movie.name}`);
@@ -56,7 +56,7 @@ export default class Metadata {
     private static async handleShow(show: Show) : Promise<void> {
         try {
             show = await TvMetadata.getShow(show);
-            show.metadataStatus = Status.Fulfilled;
+            show.metadataStatus = Status.Processed;
             await ShowService.updateOne(show);
 
             console.log(`[metadata] Metadata retrieved for show: ${show.name}`);
@@ -74,7 +74,7 @@ export default class Metadata {
                 throw new Error(`Unable to find show: ${season.show}`);
 
             season = await TvMetadata.getSeason(season, show);
-            season.metadataStatus = Status.Fulfilled;
+            season.metadataStatus = Status.Processed;
             await SeasonService.updateOne(season);
 
             console.log(`[metadata] Metadata retrieved for season: ${show.name} season ${season.number}`);
@@ -96,7 +96,7 @@ export default class Metadata {
                 throw new Error
 
             episode = await TvMetadata.getEpisode(episode, season, show);
-            episode.metadataStatus = Status.Fulfilled;
+            episode.metadataStatus = Status.Processed;
             await EpisodeService.updateOne(episode);
 
             console.log(`[metadata] Metadata retrieved for episode: ${show.name} season ${season.number} episode ${episode.number}`);

@@ -5,14 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "api",
             "type": "node",
-            "request": "launch",
-            "name": "App",
-            "program": "${workspaceFolder}\\api\\app.js",
+            "request": "attach",
+            "address": "192.168.1.101",
+            "port": 5858,
+            "sourceMaps": true,
+            "restart": true,
+            "protocol": "inspector",
+            "localRoot": null
+        },
+        {
+            "cwd": "${workspaceFolder}/indexer",
+            "name": "indexer",
+            "type": "node",
+            "request": "attach",
+            "address": "192.168.1.101",
+            "port": 9001,
+            "sourceMaps": true,
+            "localRoot": "${workspaceFolder}/indexer",
+            "remoteRoot": "/app/indexer",
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/indexer/**/*.js"
             ],
-            "preLaunchTask": "tsc"
+            "restart": true
         }
     ]
 }

@@ -12,11 +12,11 @@ export class Base<TModel> {
         this.collection = collection;
     }
 
-    protected async connect() : Promise<Collection> {
+    protected async connect(collection?: string) : Promise<Collection> {
         return new Promise<Collection>((resolve, reject) => {
             MongoClient.connect(this.connectionString, { useUnifiedTopology:true }, (error, client) => {
                 if (error) reject(error);
-                else resolve(client.db('video-streamer').collection(this.collection));
+                else resolve(client.db('showveo').collection(collection || this.collection));
             });
         });
     }

@@ -64,12 +64,12 @@ export class Subtitler {
             await this.downloadSubtitle(results.en.url, output);
             
             media.subtitles = output;
-            media.subtitlesStatus = Status.Fulfilled;
+            media.subtitlesStatus = Status.Processed;
         } catch (e) {
             console.log(`[subtitler] Error processing subtitle query: ${JSON.stringify(media)}`);
             console.error(e);
 
-            media.subtitlesStatus = Status.Missing;
+            media.subtitlesStatus = Status.Unprocessed;
             this.queue.sendError(new Message(media, type, e));
         }
 

@@ -30,39 +30,68 @@ export class TvIndexer {
     fileManager: Files;
     subtitleQueue: Queue;
     metadataQueue: Queue;
+    conversionQueue: Queue;
     
-    constructor(subtitleQueue: Queue, metadataQueue: Queue, paths: string[]) {
+    constructor(subtitleQueue: Queue, metadataQueue: Queue, conversionQueue: Queue, paths: string[]) {
         this.subtitleQueue = subtitleQueue;
         this.metadataQueue = metadataQueue;
+        this.conversionQueue = conversionQueue;
         this.paths = paths;
-        this.fileManager = new Files((file: File) => file.is(FileState.Converted));
+        this.fileManager = new Files((file: File) => file.isVideoFile());
     }
 
     async run(...files: File[]) : Promise<void> {
         console.log('[tv-indexer] Indexing TV shows.');
 
         await this.removeEpisodesWithNoFile();
+        await this.removeSeasonsWithNoEpisodes();
+        await this.removeShowsWithNoSeasons();
 
         files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
         console.log(`[tv-indexer] Found ${files.length} video files.`);
         
-        for (var i = 0; i < files.length; i++)
-            await this.processFile(files[i]);
+        // for (var i = 0; i < files.length; i++)
+        //     await this.processFile(files[i]);
 
         console.log(`[tv-indexer] Done. Processed ${files.length} TV episode${files.length === 1 ? '' : 's'}.`);
 
+        //Episodes fail to process on watch event.
+
         const watcher = new Watcher(...this.paths);
+
         watcher.on(WatcherEvent.Update, async (file: File) => {
-            if (file.is(FileState.Converted))
+            if (file.isVideoFile() && fs.existsSync(file.path))
                 await this.processFile(file);
         });
+
+        watcher.on(WatcherEvent.Remove, async () => {
+            await this.removeEpisodesWithNoFile();
+            await this.removeSeasonsWithNoEpisodes();
+            await this.removeShowsWithNoSeasons();
+        });
+
+        console.log(`[tv-indexer] Watching for file changes...`);
     }
 
-    async removeEpisodesWithNoFile() {
+    private async removeEpisodesWithNoFile() {
         const episodes = (await EpisodeService.get()).filter((episode: Episode) => !fs.existsSync(episode.path));
         for (var i = 0; i < episodes.length; i++)
             await EpisodeService.remove(episodes[i]);
-        console.log(`[tv-indexer] Remove ${episodes.length} missing episode${episodes.length === 1 ? '' : 's'}.`);
+        console.log(`[tv-indexer] Removed ${episodes.length} missing episode${episodes.length === 1 ? '' : 's'}.`);
+    }
+
+    private async removeSeasonsWithNoEpisodes() {
+        const seasons = await SeasonService.getSeasonsWithNoEpisodes();
+        for (var i = 0; i < seasons.length; i++)
+            await SeasonService.remove(seasons[i]);
+        console.log(`[tv-indexer] Removed ${seasons.length} season${seasons.length === 1 ? '' : 's'} with no episodes.`);
+    }
+
+    private async removeShowsWithNoSeasons() {
+        const shows = await ShowService.getShowsWithNoSeasons();
+        for (var i = 0; i < shows.length; i++)
+            await ShowService.remove(shows[i]);
+        console.log(`[tv-indexer] Removed ${shows.length} show${shows.length === 1 ? '' : 's'} with no seasons.`);
     }
 
     private async processFile(file: File) : Promise<void> {
@@ -86,11 +115,11 @@ export class TvIndexer {
         if (!show) {
             show = new Show();
             show.name = name;
-            show.metadataStatus = Status.Missing;
+            show.metadataStatus = Status.Unprocessed;
             await ShowService.insertOne(show);
         }
 
-        if (show.metadataStatus === Status.Missing) {
+        if (show.metadataStatus === Status.Unprocessed) {
             show.metadataStatus = Status.Queued;
             this.metadataQueue.send(new Message(show, MessageType.Show));
             await ShowService.updateOne(show);
@@ -106,11 +135,11 @@ export class TvIndexer {
             season = new Season();
             season.number = number;
             season.show = show.name;
-            season.metadataStatus = Status.Missing;
+            season.metadataStatus = Status.Unprocessed;
             await SeasonService.insertOne(season);
         }
 
-        if (season.metadataStatus === Status.Missing) {
+        if (season.metadataStatus === Status.Unprocessed) {
             season.metadataStatus = Status.Queued;
             this.metadataQueue.send(new Message(season, MessageType.Season));
             await SeasonService.updateOne(season);
@@ -129,23 +158,23 @@ export class TvIndexer {
             episode.runtime = await getVideoDuration(file.path);
             episode.subtitles = null;
             episode.subtitlesOffset = 0;
-            episode.subtitlesStatus = Status.Missing;
-            episode.metadataStatus = Status.Missing;
+            episode.subtitlesStatus = Status.Unprocessed;
+            episode.metadataStatus = Status.Unprocessed;
             await EpisodeService.insertOne(episode);
         }
 
         episode.path = file.path;
 
-        if (episode.metadataStatus === Status.Missing) {
+        if (episode.metadataStatus === Status.Unprocessed) {
             episode.metadataStatus = Status.Queued;
             this.metadataQueue.send(new Message(episode, MessageType.Episode));
         }
 
         const subtitlesPath = `${path.dirname(file.path)}/${File.getName(file.path)}.vtt`;
         if (fs.existsSync(subtitlesPath)) {
-            episode.subtitlesStatus = Status.Fulfilled;
+            episode.subtitlesStatus = Status.Processed;
             episode.subtitles = subtitlesPath;
-        } else if (episode.subtitlesStatus === Status.Missing) {
+        } else if (episode.subtitlesStatus === Status.Unprocessed) {
             episode.subtitlesStatus = Status.Queued;
             this.subtitleQueue.send(new Message(episode, MessageType.Episode));
         }
