@@ -28,4 +28,4 @@ RUN git clone https://git.ffmpeg.org/ffmpeg.git && \
     make install && \
     cd ..
 
-CMD yarn converter-dev
+CMD yarn converter:dev

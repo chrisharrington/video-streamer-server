@@ -1,3 +1,3 @@
 FROM node:latest
 WORKDIR /app
-CMD yarn indexer-dev
+CMD yarn indexer:dev

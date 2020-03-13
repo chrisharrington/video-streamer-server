@@ -8,27 +8,51 @@
             "name": "api",
             "type": "node",
             "request": "attach",
-            "address": "192.168.1.101",
-            "port": 5858,
-            "sourceMaps": true,
+            "port": 9000,
+            "protocol": "auto",
             "restart": true,
-            "protocol": "inspector",
-            "localRoot": null
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
         },
         {
-            "cwd": "${workspaceFolder}/indexer",
             "name": "indexer",
             "type": "node",
             "request": "attach",
-            "address": "192.168.1.101",
             "port": 9001,
-            "sourceMaps": true,
-            "localRoot": "${workspaceFolder}/indexer",
-            "remoteRoot": "/app/indexer",
-            "outFiles": [
-                "${workspaceFolder}/indexer/**/*.js"
-            ],
-            "restart": true
+            "protocol": "auto",
+            "restart": true,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+        },
+        {
+            "name": "converter",
+            "type": "node",
+            "request": "attach",
+            "port": 9002,
+            "protocol": "auto",
+            "restart": true,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+        },
+        {
+            "name": "metadata",
+            "type": "node",
+            "request": "attach",
+            "port": 9004,
+            "protocol": "auto",
+            "restart": true,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
+        },
+        {
+            "name": "subtitler",
+            "type": "node",
+            "request": "attach",
+            "port": 9003,
+            "protocol": "auto",
+            "restart": true,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/app"
         }
     ]
 }

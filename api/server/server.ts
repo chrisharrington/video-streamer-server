@@ -2,9 +2,9 @@ import * as express from 'express';
 import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
 
-// import Movies from './movies';
-// import Shows from './shows';
-// import Devices from './devices';
+import Movies from './movies';
+import Shows from './shows';
+import Devices from './devices';
 
 export default class Server {
     port: number;
@@ -19,12 +19,8 @@ export default class Server {
         app.use(bodyParser.json());
         app.listen(this.port, () => console.log(`[api] Listening on port ${this.port}...`));
 
-        app.get('/', (request, response) => {
-            response.status(200).send('Hallo, world!');
-        });
-
-        // new Movies().initialize(app);
-        // new Shows().initialize(app);
-        // new Devices().initialize(app);
+        new Movies().initialize(app);
+        new Shows().initialize(app);
+        new Devices().initialize(app);
     }
 }

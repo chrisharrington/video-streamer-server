@@ -1,3 +1,3 @@
 FROM node:latest
 WORKDIR /app
-CMD yarn subtitler-dev
+CMD yarn subtitler:dev

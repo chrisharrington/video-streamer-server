@@ -1,3 +1,3 @@
 FROM node:latest
 WORKDIR /app
-CMD yarn metadata-dev
+CMD yarn metadata:dev

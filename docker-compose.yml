@@ -29,7 +29,7 @@ services:
       - queue
       - data
     ports:
-      - 9000:9229
+      - 9000:9000
   indexer:
     build:
       context: .
@@ -40,7 +40,7 @@ services:
       - ~/media:/media
       - ./:/app
     ports:
-      - 9001:9229
+      - 9001:9001
     depends_on:
       - queue
       - data
@@ -58,7 +58,7 @@ services:
       - ~/media:/media
       - ./:/app
     ports:
-      - 9002:9229
+      - 9002:9002
     depends_on:
       - queue
       - data
@@ -72,7 +72,7 @@ services:
       - ~/media:/media
       - ./:/app
     ports:
-      - 9003:9229
+      - 9003:9003
     depends_on:
       - queue
       - data
@@ -85,7 +85,7 @@ services:
     volumes:
       - ./:/app
     ports:
-      - 9004:9229
+      - 9004:9004
     depends_on:
       - queue
       - data

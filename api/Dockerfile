@@ -11,4 +11,4 @@ EXPOSE 8101
 CMD npm rebuild mdns && \
     service dbus start && \
     avahi-daemon --no-rlimits -D && \
-    yarn api-dev
+    yarn api:dev
