@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import Config from '@root/config';
+import { convertingFileName, videoExtensions } from '@root/constants';
 
 export class Id {
     _id: string;
@@ -37,23 +37,21 @@ export enum StreamType {
 export class File {
     path: string;
     output: string;
-    extensions: string[];
 
     constructor(path?: string, output?: string) {
         this.path = path;
         this.output = output || path;
-        this.extensions = ['mkv', 'mp4', 'avi', 'wmv', 'm4a', 'webm', 'mpg', 'mov', 'mp2', 'mpeg', 'mp3', 'mpv', 'ogg', 'm4p', 'qt', 'flv', 'swf'];
     }
 
     isVideoFile() {
-        return this.extensions.some((extension: string) => this.path.endsWith(extension));
+        return !this.path.endsWith(convertingFileName) && videoExtensions.some((extension: string) => this.path.endsWith(extension));
     }
 
     is(state: FileState) {
         const path = this.path;
         switch (state) {
             case FileState.Valid:
-                return this.extensions.some((extension: string) => this.path.endsWith(extension));
+                return videoExtensions.some((extension: string) => this.path.endsWith(extension));
             case FileState.Unprocessed:
                 return !path.endsWith(`.${FileState.Converting}.mp4`) &&
                     !path.endsWith(`.${FileState.Queued}.mp4`) &&

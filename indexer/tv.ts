@@ -41,6 +41,7 @@ export class TvIndexer {
     }
 
     async run(...files: File[]) : Promise<void> {
+        const date = new Date();
         console.log('[tv-indexer] Indexing TV shows.');
 
         await this.removeEpisodesWithNoFile();
@@ -50,12 +51,11 @@ export class TvIndexer {
         files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
         console.log(`[tv-indexer] Found ${files.length} video files.`);
         
-        // for (var i = 0; i < files.length; i++)
-        //     await this.processFile(files[i]);
+        const { shows, seasons, episodes } = await this.getAllMedia();
+        for (var i = 0; i < files.length; i++)
+            await this.processFile(files[i], shows, seasons, episodes);
 
-        console.log(`[tv-indexer] Done. Processed ${files.length} TV episode${files.length === 1 ? '' : 's'}.`);
-
-        //Episodes fail to process on watch event.
+        console.log(`[tv-indexer] Done. Processed ${files.length} TV episode${files.length === 1 ? '' : 's'} in ${(new Date().getTime() - date.getTime())/1000} seconds.`);
 
         const watcher = new Watcher(...this.paths);
 
@@ -71,6 +71,18 @@ export class TvIndexer {
         });
 
         console.log(`[tv-indexer] Watching for file changes...`);
+    }
+
+    private async getAllMedia() : Promise<{ shows: {[key: string]: Show}, seasons: {[key: string]: Season}, episodes: {[key: string]: Episode} }> {
+        return Promise.all([
+            ShowService.get(),
+            SeasonService.get(),
+            EpisodeService.get()
+        ]).then(results => ({
+            shows: results[0].reduce((map, obj) => { map[obj.name] = obj; return map; }, {}) as {[key: string]: Show},
+            seasons: results[1].reduce((map, obj) => { map[obj.show + obj.number] = obj; return map; }, {}) as {[key: string]: Season},
+            episodes: results[2].reduce((map, obj) => { map[obj.show + obj.season + obj.number] = obj; return map; }, {}) as {[key: string]: Episode}
+        }));
     }
 
     private async removeEpisodesWithNoFile() {
@@ -94,23 +106,23 @@ export class TvIndexer {
         console.log(`[tv-indexer] Removed ${shows.length} show${shows.length === 1 ? '' : 's'} with no seasons.`);
     }
 
-    private async processFile(file: File) : Promise<void> {
+    private async processFile(file: File, shows?: {[key: string]: Show}, seasons?: {[key: string]: Season}, episodes?: {[key: string]: Episode}) : Promise<void> {
         try {
             console.log(`[tv-indexer] Processing ${file.path}.`);
 
             const tv = TvFile.fromFile(file),
-                show = await this.processShow(tv.show),
-                season = await this.processSeason(tv.season, show);
+                show = await this.processShow(tv.show, shows || {}),
+                season = await this.processSeason(tv.season, show, seasons || {});
 
-            await this.processEpisode(file, tv.episode, season, show);
+            await this.processEpisode(file, tv.episode, season, show, episodes || {});
         } catch (e) {
             console.log(`[tv-indexer] Error processing ${file.path}.`);
             console.error(e);
         }
     }
 
-    private async processShow(name: string) : Promise<Show> {
-        let show = await ShowService.findOne({ name });
+    private async processShow(name: string, shows?: {[key: string]: Show}) : Promise<Show> {
+        let show = shows[name] || await ShowService.findOne({ name });
 
         if (!show) {
             show = new Show();
@@ -128,8 +140,8 @@ export class TvIndexer {
         return show;
     }
 
-    private async processSeason(number: number, show: Show) : Promise<Season> {
-        let season = await SeasonService.findOne({ number, show: show.name });
+    private async processSeason(number: number, show: Show, seasons: {[key: string]: Season}) : Promise<Season> {
+        let season = seasons[show.name + number] || await SeasonService.findOne({ number, show: show.name });
 
         if (!season) {
             season = new Season();
@@ -148,8 +160,8 @@ export class TvIndexer {
         return season;
     }
 
-    private async processEpisode(file: File, number: number, season: Season, show: Show) : Promise<void> {
-        let episode = await EpisodeService.findOne({ number, season: season.number, show: show.name });
+    private async processEpisode(file: File, number: number, season: Season, show: Show, episodes: {[key: string]: Episode}) : Promise<void> {
+        let episode = episodes[show.name + season.number + number] || await EpisodeService.findOne({ number, season: season.number, show: show.name });
         if (!episode) {
             episode = new Episode();
             episode.number = number;
@@ -160,6 +172,7 @@ export class TvIndexer {
             episode.subtitlesOffset = 0;
             episode.subtitlesStatus = Status.Unprocessed;
             episode.metadataStatus = Status.Unprocessed;
+            episode.conversionStatus = Status.Unprocessed;
             await EpisodeService.insertOne(episode);
         }
 
@@ -167,16 +180,14 @@ export class TvIndexer {
 
         if (episode.metadataStatus === Status.Unprocessed) {
             episode.metadataStatus = Status.Queued;
+            console.log(`[tv-indexer] Enqueuing metadata request for ${file.path}.`);
             this.metadataQueue.send(new Message(episode, MessageType.Episode));
         }
 
-        const subtitlesPath = `${path.dirname(file.path)}/${File.getName(file.path)}.vtt`;
-        if (fs.existsSync(subtitlesPath)) {
-            episode.subtitlesStatus = Status.Processed;
-            episode.subtitles = subtitlesPath;
-        } else if (episode.subtitlesStatus === Status.Unprocessed) {
-            episode.subtitlesStatus = Status.Queued;
-            this.subtitleQueue.send(new Message(episode, MessageType.Episode));
+        if (episode.conversionStatus === Status.Unprocessed) {
+            episode.conversionStatus = Status.Queued;
+            console.log(`[tv-indexer] Enqueuing conversion request for ${file.path}.`);
+            this.conversionQueue.send(new Message(episode, MessageType.Episode));
         }
 
         await EpisodeService.updateOne(episode);

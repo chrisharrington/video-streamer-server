@@ -43,6 +43,10 @@ export class Cast {
             delete this.deviceMap[device.name];
         });
 
+        browser.on('error', error => {
+            console.error(`[api] Device error: `, error);
+        });
+
         browser.start();
     }
 

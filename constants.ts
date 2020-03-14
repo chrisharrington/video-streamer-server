@@ -1,0 +1,2 @@
+export const convertingFileName = 'converting.mp4';
+export const videoExtensions = ['mkv', 'mp4', 'avi', 'wmv', 'm4a', 'webm', 'mpg', 'mov', 'mp2', 'mpeg', 'mp3', 'mpv', 'ogg', 'm4p', 'qt', 'flv', 'swf'];

@@ -15,6 +15,6 @@ export default class Indexer {
             movieIndexer = new MovieIndexer(subtitleQueue, metadataQueue, conversionQueue, movieDirectories);
 
         await tvIndexer.run();
-        // await movieIndexer.run();
+        await movieIndexer.run();
     }
 }

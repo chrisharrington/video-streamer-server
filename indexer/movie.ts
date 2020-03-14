@@ -23,22 +23,29 @@ export class MovieIndexer {
     }
 
     async run(...files: File[]) : Promise<void> {
+        const date = new Date();
+
         console.log('[movie-indexer] Indexing movies.');
 
         await this.removeMoviesWithNoFile();
 
         files = files.length > 0 ? files : [].concat.apply([], await Promise.all(this.paths.map(async library => await this.fileManager.find(library))));
-        console.log(`[movie-indexer] Found ${files.length} video file${files.length === 1 ? '' : 's'}.`);
+        console.log(`[movie-indexer] Found ${files.length} video file${files.length === 1 ? '' : 's'} in ${(new Date().getTime() - date.getTime())/1000} seconds.`);
+
+        const movies = (await MovieService.get()).reduce((map: any, movie: Movie) => {
+            map[movie.name + movie.year] = movie;
+            return map;
+        }, {})
 
         for (var i = 0; i < files.length; i++)
-            await this.processFile(files[i]);
+            await this.processFile(files[i], movies);
 
         console.log(`[movie-indexer] Done. Processed ${files.length} movie${files.length === 1 ? '' : 's'}.`);
 
         const watcher = new Watcher(...this.paths);
         watcher.on(WatcherEvent.Update, async (file: File) => {
             if (file.isVideoFile())
-                await this.processFile(file);
+                await this.processFile(file, movies);
         });
 
         console.log(`[movie-indexer] Watching for file changes...`);
@@ -51,7 +58,7 @@ export class MovieIndexer {
         console.log(`[movie-indexer] Removed ${movies.length} missing movie${movies.length === 1 ? '' : 's'}.`);
     }
 
-    private async processFile(file: File) : Promise<void> {
+    private async processFile(file: File, movies: any) : Promise<void> {
         try {
             const title = file.path.split('/').slice(-2, -1).join(),
                 name = title.split(' ').slice(0, -1).join(' '),
@@ -59,7 +66,7 @@ export class MovieIndexer {
 
             console.log(`[movie-indexer] Processing ${file.path}.`);
 
-            let movie: Movie = await MovieService.findOne({ name, year });
+            let movie: Movie = movies[name + year] || await MovieService.findOne({ name, year });
             if (!movie) {
                 movie = new Movie(file.path);
                 movie.name = name;

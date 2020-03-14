@@ -1,3 +1,5 @@
+import { Collection } from 'mongodb';
+
 import { Show, Season } from '@root/models';
 
 import { Base } from './base';
@@ -5,6 +7,10 @@ import { Base } from './base';
 class ShowService extends Base<Show> {
     constructor() {
         super('shows');
+
+        // this.connect().then((collection: any) => {
+        //     collection.ensureIndex({ name: 1 });
+        // });
     }
 
     async get() : Promise<Show[]> {
