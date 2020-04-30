@@ -30,11 +30,9 @@ export default class Converter {
             switch (message.type) {
                 case MessageType.Movie:
                     const movie = media as Movie;
-
-                    if (result.conversion) {
-                        movie.conversionStatus = Status.Processed;
-                        await MovieService.updateOne(movie);
-                    }
+                    movie.conversionStatus = result.conversion === undefined ? Status.Processed : Status.Failed;
+                    movie.conversionError = result.conversion === undefined ? null : result.conversion as Error;
+                    await MovieService.updateOne(movie);
 
                     if (!result.subtitles) {
                         console.log(`[converter] No subtitles found. Enqueuing movie subtitle request for ${movie.name}.`);
@@ -44,11 +42,9 @@ export default class Converter {
                     break;
                 case MessageType.Episode:
                     const episode = media as Episode;
-
-                    if (result.conversion) {
-                        episode.conversionStatus = Status.Processed;
-                        await EpisodeService.updateOne(episode);
-                    }
+                    episode.conversionStatus = result.conversion === undefined ? Status.Processed : Status.Failed;
+                    episode.conversionError = result.conversion === undefined ? null : result.conversion as Error;
+                    await EpisodeService.updateOne(episode);
 
                     if (!result.subtitles) {
                         console.log(`[converter] No subtitles found. Enqueuing episode subtitle request for ${episode.show}/${episode.season}/${episode.number}.`);

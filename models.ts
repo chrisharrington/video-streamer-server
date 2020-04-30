@@ -25,7 +25,8 @@ export enum MessageType {
 export enum Status {
     Unprocessed = 'unprocessed',
     Queued = 'queued',
-    Processed = 'processed'
+    Processed = 'processed',
+    Failed = 'failed'
 }
 
 export enum StreamType {
@@ -91,6 +92,9 @@ export class Media extends Id {
     subtitlesStatus: Status;
     metadataStatus: Status;
     conversionStatus: Status;
+
+    subtitlesError: Error | null;
+    conversionError: Error | null;
 
     constructor() {
         super();

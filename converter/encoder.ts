@@ -18,8 +18,8 @@ const FfmpegCommand = require('fluent-ffmpeg');
 //     output.mp4
 
 export interface EncodingResult {
-    conversion: boolean;
-    subtitles: boolean;
+    conversion: void | Error;
+    subtitles: void | Error;
 }
 
 export default class Encoder {
@@ -44,10 +44,10 @@ export default class Encoder {
         };
     }
 
-    private async convert(file: File, probe: any) : Promise<boolean> {
+    private async convert(file: File, probe: any) : Promise<void | Error> {
         const temp = `${path.dirname(file.output)}/${convertingFileName}`;
 
-        return new Promise<boolean>(async (resolve: (success: boolean) => void, reject: (error: Error) => void) => {
+        return new Promise<void | Error>(async (resolve: (status: void | Error) => void) => {
             try {
                 console.log(`[converter] Encoding ${file.path} to ${file.output}.`);
 
@@ -60,19 +60,19 @@ export default class Encoder {
                 if (video === 'h264' && audio === 'mp3') {
                     console.log(`[converter] No encoding necessary.`);
                     fs.renameSync(file.path, file.output);
-                    resolve(true);
+                    resolve();
                     return;
                 }
 
                 const videoIndex = probe.streams.findIndex(stream => stream.codec_type === StreamType.Video);
                 if (videoIndex === -1)
-                    return reject(new Error('No appropriate video stream found.'));
+                    return resolve(new Error('No appropriate video stream found.'));
                 
                 let audioIndex = probe.streams.findIndex(stream => stream.codec_type === StreamType.Audio && stream.tags.language === 'eng');
                 if (audioIndex === -1)
                     audioIndex = probe.streams.findIndex(stream => stream.codec_type === StreamType.Audio);
                 if (audioIndex === -1)
-                    return reject(new Error('No appropriate audio stream found.'));
+                    return resolve(new Error('No appropriate audio stream found.'));
 
                 const command = new FfmpegCommand(file.path)
                     .inputOptions(
@@ -89,19 +89,21 @@ export default class Encoder {
                         '-map', '0:' + audioIndex
                     );
 
-                    
-
                 command.on('start', () => console.log(`[converter] Converting: ${file.path}`));
-                command.on('end', () => this.onEnd(file, temp, () => resolve(true)));
+                command.on('error', error => {
+                    console.error(`[converter] Failed to convert ${file.path}.`);
+                    resolve(error);
+                });
+                command.on('end', () => this.onEnd(file, temp, () => resolve()));
                 command.run();
             } catch (e) {
                 this.deleteFiles(temp)
-                reject(e);
+                resolve(e);
             }
         });
     }
 
-    private async extractSubtitles(file: File, probe: any) : Promise<boolean> {
+    private async extractSubtitles(file: File, probe: any) : Promise<void | Error> {
         console.log(`[converter] Extracting subtitles: ${file.path}`)
 
         let index = probe.streams.findIndex(stream => stream.codec_type === 'subtitle' && stream.tags.language === 'eng' && stream.disposition.forced === 0);
@@ -109,9 +111,9 @@ export default class Encoder {
             index = probe.streams.findIndex(stream => stream.codec_type === 'subtitle' && stream.tags.language === 'eng');
 
         if (index === -1)
-            return false;
+            return new Error('No valid subtitle stream found.');
 
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             new FfmpegCommand(file.path)
                 .format('srt')
                 .inputOptions(
@@ -122,9 +124,9 @@ export default class Encoder {
                 )
                 .on('end', () => {
                     console.log(`[converter] Subtitles extracted: ${file.path}`);
-                    resolve(true);
+                    resolve();
                 })
-                .on('error', error => reject(error))
+                .on('error', error => resolve(error))
                 .pipe(srt2vtt())
                 .pipe(fs.createWriteStream(`${path.dirname(file.output)}/${path.parse(file.output).name}.vtt`));
         });
@@ -147,9 +149,5 @@ export default class Encoder {
             if (fs.existsSync(file))
                 fs.unlinkSync(file);
         })
-    }
-
-    private async getStreamIndex(probe: any, filter: (stream: any) => boolean) : Promise<number> {
-        return probe.streams.findIndex(filter);
     }
 }
