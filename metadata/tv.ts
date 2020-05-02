@@ -5,6 +5,7 @@ import Config from '@root/config';
 import { StringExtensions } from '@root/extensions';
 import { Show, Season, Episode } from '@root/models';
 
+import Downloader from './downloader';
 import Metadata from './base';
 
 class TvMetadata extends Metadata {
@@ -16,11 +17,17 @@ class TvMetadata extends Metadata {
                 details = await this.showDetails(search.id),
                 configuration = await this.configuration;
                 
+            const [ poster, backdrop ] = await Promise.all([
+                Downloader.image(`${configuration.base_url}w342${details.poster_path}`),
+                Downloader.image(`${configuration.base_url}original${details.backdrop_path}`)
+            ]);
+            
             show.externalId = search.id;
             show.year = dayjs(details.first_air_date, 'yyyy-mm-dd').year();
             show.synopsis = details.overview;
-            show.poster = `${configuration.base_url}w342${details.poster_path}`;
-            show.backdrop = `${configuration.base_url}original${details.backdrop_path}`;
+            show.poster = poster;
+            show.backdrop = backdrop;
+            
             return show;
         } catch (e) {
             console.log(`[tv-metadata] Error processing metadata for ${show.name}: ${e.toString()}`)

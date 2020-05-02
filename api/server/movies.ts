@@ -8,13 +8,13 @@ import Base from './base';
 export default class Movies extends Base {
     app: express.Application;
 
-    initialize(app) {
-        app.get('/movies/all', this.getMovies.bind(this));
-        app.post('/movies/progress', this.saveProgress.bind(this));
-        app.get('/movies/:year/:name', this.getMovieByYearAndName.bind(this));
+    initialize(app: express.Express, prefix: string = '') {
+        app.get(prefix + '/movies/all', this.getMovies.bind(this));
+        app.post(prefix + '/movies/progress', this.saveProgress.bind(this));
+        app.get(prefix + '/movies/:year/:name', this.getMovieByYearAndName.bind(this));
 
-        app.get('/movies/play/:year/:name', this.playMovie.bind(this));
-        app.get('/movies/subtitle/:year/:name', this.getSubtitlesForMovie.bind(this));
+        app.get(prefix + '/movies/play/:year/:name', this.playMovie.bind(this));
+        app.get(prefix + '/movies/subtitle/:year/:name', this.getSubtitlesForMovie.bind(this));
     }
 
     private async getMovies(_, response: express.Response) {

@@ -1,12 +1,11 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import getVideoDuration from 'get-video-duration';
 
 import Files from '@root/files';
 import ShowService from '@root/data/show';
 import SeasonService from '@root/data/season';
 import EpisodeService from '@root/data/episode';
-import { Episode, File, Show, Season, FileState, Status, MessageType, Message } from '@root/models';
+import { Episode, File, Show, Season, Status, MessageType, Message } from '@root/models';
 import { Watcher, WatcherEvent } from '@root/watcher';
 import Queue from '@root/queue';
 

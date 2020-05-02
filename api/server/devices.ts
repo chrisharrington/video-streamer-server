@@ -13,16 +13,16 @@ import Device from '../cast/device';
 export default class Devices extends Base {
     private castManager: Cast;
 
-    initialize(app: Application) {
+    initialize(app: Application, prefix: string = '') {
         this.castManager = new Cast();
 
-        app.get('/devices', this.getDevices.bind(this));
+        app.get(prefix + '/devices', this.getDevices.bind(this));
 
-        app.post('/devices/cast', this.cast.bind(this));
-        app.post('/devices/play', this.play.bind(this));
-        app.post('/devices/pause', this.pause.bind(this));
-        app.post('/devices/stop', this.stop.bind(this));
-        app.post('/devices/seek', this.seek.bind(this));
+        app.post(prefix + '/devices/cast', this.cast.bind(this));
+        app.post(prefix + '/devices/play', this.play.bind(this));
+        app.post(prefix + '/devices/pause', this.pause.bind(this));
+        app.post(prefix + '/devices/stop', this.stop.bind(this));
+        app.post(prefix + '/devices/seek', this.seek.bind(this));
     }
 
     private async getDevices(_: Request, response: Response) {

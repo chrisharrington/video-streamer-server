@@ -4,6 +4,7 @@ import Config from '@root/config';
 import { Movie } from '@root/models';
 import { StringExtensions } from '@root/extensions';
 
+import Downloader from './downloader';
 import Metadata from './base';
 
 class MovieMetadata extends Metadata {
@@ -17,11 +18,17 @@ class MovieMetadata extends Metadata {
                 details = await this.movieDetails(search.id),
                 configuration = await this.configuration;
 
+            const [ poster, backdrop ] = await Promise.all([
+                Downloader.image(`${configuration.base_url}w342${details.poster_path}`),
+                Downloader.image(`${configuration.base_url}original${details.backdrop_path}`)
+            ]);
+
             movie.externalId = search.id;
-            movie.poster = `${configuration.base_url}w342${details.poster_path}`;
-            movie.backdrop = `${configuration.base_url}original${details.backdrop_path}`
+            movie.poster = poster;
+            movie.backdrop = backdrop;
             movie.synopsis = details.overview;
             movie.genres = details.genres.map(genre => genre.name);
+
             return movie;
         } catch (e) {
             console.log(`[movie-metadata] Error processing metadata for ${movie.name}: ${e.toString()}`)

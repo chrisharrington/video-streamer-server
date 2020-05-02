@@ -13,18 +13,18 @@ import Base from './base';
 export default class Shows extends Base {
     app: express.Application;
 
-    initialize(app) {
-        app.get('/shows/subtitle/:id', this.getSubtitlesForEpisode.bind(this));
-        app.get('/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
-        app.get('/shows/all', this.getShows.bind(this));
+    initialize(app: express.Express, prefix: string = '') {
+        app.get(prefix + '/shows/subtitle/:id', this.getSubtitlesForEpisode.bind(this));
+        app.get(prefix + '/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
+        app.get(prefix + '/shows/all', this.getShows.bind(this));
 
-        app.get('/shows/:show', this.getShow.bind(this));
-        app.get('/shows/:show/seasons', this.getSeasons.bind(this));
-        app.get('/shows/:show/:season', this.getSeason.bind(this));
-        app.get('/shows/:show/:season/episodes', this.getEpisodes.bind(this));
-        app.get('/shows/:show/:season/:episode', this.getEpisode.bind(this));
+        app.get(prefix + '/shows/:show', this.getShow.bind(this));
+        app.get(prefix + '/shows/:show/seasons', this.getSeasons.bind(this));
+        app.get(prefix + '/shows/:show/:season', this.getSeason.bind(this));
+        app.get(prefix + '/shows/:show/:season/episodes', this.getEpisodes.bind(this));
+        app.get(prefix + '/shows/:show/:season/:episode', this.getEpisode.bind(this));
 
-        app.post('/shows/progress', this.saveProgress.bind(this));
+        app.post(prefix + '/shows/progress', this.saveProgress.bind(this));
     }
 
     private async getShows(_, response: express.Response) {

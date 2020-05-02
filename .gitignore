@@ -75,3 +75,6 @@ queue/
 
 # Built front end files
 dist/
+
+# Static image files.
+static/images/
