@@ -14,6 +14,7 @@ export default class Config {
     static subtitlesUserAgent: string = 'Showveo';
 
     static serverPort: number = 12000;
+    static serverApiKey: string = '5c3fdb3a2e444778b127b50b63fdd30f';
 
     static movieLibraries: string[] = ['/media/movies', '/media/kids-movies'];
     static tvLibraries: string[] = ['/media/tv', '/media/kids-tv'];
