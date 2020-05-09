@@ -21,4 +21,6 @@ export default class Config {
 
     static imageDomain: string = 'https://static.showveo.com/images/';
     static imagePath: string = '/data/images/';
+
+    static playMovieUrl: string = 'https://api.showveo.com/data/movies/play/{year}/{name}';
 }

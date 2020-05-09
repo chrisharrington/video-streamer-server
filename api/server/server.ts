@@ -5,9 +5,10 @@ import * as bodyParser from 'body-parser';
 import Config from '@root/config';
 
 import Chat from './chat';
-import Movies from './movies';
-import Shows from './shows';
-import Devices from './devices';
+import Webhook from './webhook';
+import Movies from './api/movies';
+import Shows from './api/shows';
+import Devices from './api/devices';
 
 export default class Server {
     private port: number;
@@ -25,6 +26,7 @@ export default class Server {
         app.listen(this.port, () => console.log(`[api] Listening on port ${this.port}...`));
 
         new Chat().initialize(app);
+        new Webhook().initialize(app);
 
         const prefix = '/data';
         new Movies().initialize(app, prefix);
@@ -34,7 +36,7 @@ export default class Server {
 
     private authorize(request: express.Request, response: express.Response, next: () => void) {
         const auth = request.headers['authorization'];
-        if (auth === Config.serverApiKey)
+        if (auth === Config.serverApiKey || !auth)
             next();
         else
             response.sendStatus(403);

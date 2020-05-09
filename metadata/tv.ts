@@ -21,12 +21,14 @@ class TvMetadata extends Metadata {
                 Downloader.image(`${configuration.base_url}w342${details.poster_path}`),
                 Downloader.image(`${configuration.base_url}original${details.backdrop_path}`)
             ]);
-            
+
             show.externalId = search.id;
             show.year = dayjs(details.first_air_date, 'yyyy-mm-dd').year();
             show.synopsis = details.overview;
             show.poster = poster;
             show.backdrop = backdrop;
+            show.runtime = details.episode_run_time[0];
+            show.genres = details.genres.map(g => g.name);
             
             return show;
         } catch (e) {

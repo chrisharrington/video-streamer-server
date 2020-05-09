@@ -5,7 +5,7 @@ import { Base } from './base';
 
 class MovieService extends Base<Movie> {
     constructor() {
-        super('movies');
+        super('movies', { name: 'text' });
     }
 
     async get() : Promise<Movie[]> {

@@ -6,11 +6,7 @@ import { Base } from './base';
 
 class ShowService extends Base<Show> {
     constructor() {
-        super('shows');
-
-        // this.connect().then((collection: any) => {
-        //     collection.ensureIndex({ name: 1 });
-        // });
+        super('shows', { name: 'text' });
     }
 
     async get() : Promise<Show[]> {

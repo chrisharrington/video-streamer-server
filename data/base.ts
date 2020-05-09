@@ -7,9 +7,12 @@ export class Base<TModel> {
     private connectionString: string;
     private collection: string;
 
-    constructor(collection: string) {
+    constructor(collection: string, index?: any) {
         this.connectionString = Config.databaseConnectionString;
         this.collection = collection;
+
+        if (index)
+            this.connect().then(c => c.createIndex(index));
     }
 
     protected async connect(collection?: string) : Promise<Collection> {
@@ -41,6 +44,20 @@ export class Base<TModel> {
                 if (error) reject(error);
                 else resolve(result);
             });
+        });
+    }
+
+    public async search(query: string) : Promise<TModel[]> {
+        let collection = await this.connect();
+
+        return new Promise<TModel[]>((resolve, reject) => {
+            collection.find({ $text: { $search: query } })
+                .project({ score: { $meta: 'textScore' } })
+                .sort({ score: { $meta: 'textScore' } })
+                .toArray((error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                });
         });
     }
 

@@ -1,6 +1,7 @@
 import * as path from 'path';
 
 import { convertingFileName, videoExtensions } from '@root/constants';
+import Config from './config';
 
 export class Id {
     _id: string;
@@ -120,6 +121,10 @@ export class Movie extends Media {
         this.parse();
     }
 
+    public static playUrl(movie: Movie) : string {
+        return Config.playMovieUrl.replace('{year}', movie.year.toString()).replace('{name}', movie.name);
+    }
+
     private parse() {
         let split = this.path.split('//'),
             last = split[split.length-1];
@@ -137,6 +142,8 @@ export class Show extends Id {
     backdrop: string;
     synopsis: string;
     year: number;
+    runtime: number;
+    genres: string[];
 
     metadataStatus: Status;
 
@@ -199,9 +206,9 @@ export class Castable {
     poster: string;
     backdrop: string;
 
-    static fromMovie(movie: Movie, url: string) : Castable {
+    static fromMovie(movie: Movie, url?: string) : Castable {
         const castable = new Castable();
-        castable.url = url;
+        castable.url = url || Movie.playUrl(movie);
         castable.name = movie.name;
         castable.poster = movie.poster;
         castable.backdrop = movie.backdrop;

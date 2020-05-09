@@ -10,7 +10,7 @@ interface DeviceMap {
     [name: string] : Device;
 }
 
-export class Cast {
+class Cast {
     private initialized: Promise<void>;
     private deviceMap: DeviceMap;
 
@@ -55,3 +55,5 @@ export class Cast {
         return Object.values(this.deviceMap).sort((first: Device, second: Device) => first.name.localeCompare(second.name));
     }
 }
+
+export default new Cast();

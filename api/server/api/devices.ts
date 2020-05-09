@@ -1,21 +1,19 @@
 import { Application, Request, Response } from 'express';
 
-import { Cast } from '@api/cast';
+import Cast from '@api/cast';
 
 import MovieService from '@root/data/movie';
 import EpisodeService from '@root/data/episode';
 import ShowService from '@root/data/show';
 import { Castable, Episode, Movie, Show } from '@root/models';
 
+import Device from '@api/cast/device';
+
 import Base from './base';
-import Device from '../cast/device';
 
 export default class Devices extends Base {
-    private castManager: Cast;
 
     initialize(app: Application, prefix: string = '') {
-        this.castManager = new Cast();
-
         app.get(prefix + '/devices', this.getDevices.bind(this));
 
         app.post(prefix + '/devices/cast', this.cast.bind(this));
@@ -29,7 +27,7 @@ export default class Devices extends Base {
         console.log('[api] Request received: GET /devices');
 
         try {
-            response.status(200).send(await this.castManager.devices());
+            response.status(200).send(await Cast.devices());
         } catch (e) {
             console.error(`[api] Request failed: GET /devices.`);
             console.error(e);
@@ -59,7 +57,7 @@ export default class Devices extends Base {
     }
 
     private async getDevice(host: string) : Promise<Device> {
-        const devices = await this.castManager.devices();
+        const devices = await Cast.devices();
         return devices.find((device: Device) => device.host === host);
     }
 

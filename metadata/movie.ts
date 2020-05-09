@@ -15,17 +15,16 @@ class MovieMetadata extends Metadata {
                 throw new Error(`[movie-indexer] Movie missing either name or year. ${JSON.stringify(movie)}`);
                 
             const search = (await this.movieSearch(movie)).results[0],
-                details = await this.movieDetails(search.id),
                 configuration = await this.configuration;
 
-            const [ poster, backdrop ] = await Promise.all([
-                Downloader.image(`${configuration.base_url}w342${details.poster_path}`),
-                Downloader.image(`${configuration.base_url}original${details.backdrop_path}`)
+            const [ details, { backdrops, posters } ] = await Promise.all([
+                this.movieDetails(search.id),
+                this.movieImages(search.id)
             ]);
 
             movie.externalId = search.id;
-            movie.poster = poster;
-            movie.backdrop = backdrop;
+            movie.poster = posters.length === 0 ? null : await Downloader.image(`${configuration.base_url}w342${posters[0].file_path}`);
+            movie.backdrop = backdrops.length === 0 ? null : await Downloader.image(`${configuration.base_url}original${backdrops[0].file_path}`);
             movie.synopsis = details.overview;
             movie.genres = details.genres.map(genre => genre.name);
 
@@ -50,6 +49,18 @@ class MovieMetadata extends Metadata {
             throw new Error(`[movie-indexer] Invalid response from metadata API /movie/${id}: ${response.status}`);
 
         return await response.json();
+    }
+
+    private async movieImages(id: string) : Promise<any> {
+        const response = await fetch(`${Config.metadataApiUrl}movie/${id}/images?api_key=${Config.metadataApiKey}&include_image_language=en,null`);
+        if (response.status !== 200)
+            throw new Error(`[movie-indexer] Invalid response from metadata API /movie/${id}/images: ${response.status}`);
+
+        const images = await response.json(),
+            backdrops = images.backdrops.sort((first, second) => second.vote_average - first.vote_average),
+            posters = images.posters.sort((first, second) => second.vote_average - first.vote_average);
+
+        return { backdrops, posters };
     }
 }
 

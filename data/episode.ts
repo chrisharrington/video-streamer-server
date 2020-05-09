@@ -4,7 +4,7 @@ import { Base } from './base';
 
 class EpisodeService extends Base<Episode> {
     constructor() {
-        super('episodes');
+        super('episodes', { show : 'text' });
     }
 
     async get() : Promise<Episode[]> {

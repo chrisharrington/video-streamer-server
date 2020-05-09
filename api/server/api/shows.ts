@@ -111,7 +111,6 @@ export default class Shows extends Base {
         console.log(`[api] Request received: GET /shows/${show}/${season}/episodes`);
 
         try {
-            console.log(StringExtensions.escapeForRegEx(show), season);
             const episodes = await EpisodeService.find({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season }, { number: 1 });
             if (!episodes || episodes.length === 0)
                 throw new Error('No episodes found.');
@@ -132,7 +131,9 @@ export default class Shows extends Base {
         console.log(`[api] Request received: GET /shows/${show}/${season}/${number}`);
 
         try {
-            const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
+            console.log(StringExtensions.fromKebabCase(show));
+            const episode = await EpisodeService.findOne({ season, number, $text: { $search: StringExtensions.fromKebabCase(show) }});
+            // const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
             if (!episode)
                 throw new Error('No episode found.');
 
