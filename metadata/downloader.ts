@@ -11,10 +11,10 @@ const WIDTH = 500;
 export default class Downloader {
     public static async image(url: string) : Promise<string> {
         const response = await fetch(url),
-            name = `${unique()}.jpg`,
+            name = `${unique()}.webp`,
             file = fs.createWriteStream(`${Config.imagePath}${name}`),
             converter = sharp()
-                .resize(WIDTH, Math.round(WIDTH / 1.7778))
+                .resize(WIDTH)
                 .webp();
 
         return new Promise((resolve, reject) => {
