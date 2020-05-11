@@ -8,22 +8,22 @@ import ShowService from '@root/data/show';
 import { Castable, Episode, Movie, Show } from '@root/models';
 
 import Device from '@api/cast/device';
+import Middlewares from '@api/server/middlewares';
 
 import Base from './base';
 
 export default class Devices extends Base {
+    static initialize(app: Application, prefix: string = '') {
+        app.get(prefix + '/devices', Middlewares.auth, this.getDevices.bind(this));
 
-    initialize(app: Application, prefix: string = '') {
-        app.get(prefix + '/devices', this.getDevices.bind(this));
-
-        app.post(prefix + '/devices/cast', this.cast.bind(this));
-        app.post(prefix + '/devices/play', this.play.bind(this));
-        app.post(prefix + '/devices/pause', this.pause.bind(this));
-        app.post(prefix + '/devices/stop', this.stop.bind(this));
-        app.post(prefix + '/devices/seek', this.seek.bind(this));
+        app.post(prefix + '/devices/cast', Middlewares.auth, this.cast.bind(this));
+        app.post(prefix + '/devices/play', Middlewares.auth, this.play.bind(this));
+        app.post(prefix + '/devices/pause', Middlewares.auth, this.pause.bind(this));
+        app.post(prefix + '/devices/stop', Middlewares.auth, this.stop.bind(this));
+        app.post(prefix + '/devices/seek', Middlewares.auth, this.seek.bind(this));
     }
 
-    private async getDevices(_: Request, response: Response) {
+    private static async getDevices(_: Request, response: Response) {
         console.log('[api] Request received: GET /devices');
 
         try {
@@ -35,33 +35,33 @@ export default class Devices extends Base {
         }
     }
 
-    private async cast(request: Request, response: Response) {
+    private static async cast(request: Request, response: Response) {
         const castable = await this.getCastable(request);
         this.sendCommand(request, response, 'cast', (device: Device) => device.cast(castable));
     }
 
-    private async play(request: Request, response: Response) {
+    private static async play(request: Request, response: Response) {
         await this.sendCommand(request, response, 'play', (device: Device) => device.play());
     }
 
-    private async pause(request: Request, response: Response) {
+    private static async pause(request: Request, response: Response) {
         await this.sendCommand(request, response, 'pause', (device: Device) => device.pause());
     }
 
-    private async stop(request: Request, response: Response) {
+    private static async stop(request: Request, response: Response) {
         await this.sendCommand(request, response, 'stop', (device: Device) => device.stop());
     }
 
-    private async seek(request: Request, response: Response) {
+    private static async seek(request: Request, response: Response) {
 
     }
 
-    private async getDevice(host: string) : Promise<Device> {
+    private static async getDevice(host: string) : Promise<Device> {
         const devices = await Cast.devices();
         return devices.find((device: Device) => device.host === host);
     }
 
-    private async getCastable(request: Request) : Promise<Castable> {
+    private static async getCastable(request: Request) : Promise<Castable> {
         let castable: Castable,
             body: any = request.body;
 
@@ -87,7 +87,7 @@ export default class Devices extends Base {
         return castable;
     }
 
-    private async sendCommand(request: Request, response: Response, route: string, command: (device: Device) => Promise<void>) : Promise<void> {
+    private static async sendCommand(request: Request, response: Response, route: string, command: (device: Device) => Promise<void>) : Promise<void> {
         try {
             console.log(`[api] Request received: POST /devices/${route}`);
 

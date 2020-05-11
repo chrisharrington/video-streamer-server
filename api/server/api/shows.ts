@@ -1,4 +1,4 @@
-import * as express from 'express';
+import { Application, Request, Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -8,26 +8,25 @@ import EpisodeService from '@root/data/episode';
 import { Episode, Status } from '@root/models';
 import { StringExtensions } from '@root/extensions';
 
-import Base from './base';
+import Video from '@api/server/video';
+import Middlewares from '@api/server/middlewares';
 
-export default class Shows extends Base {
-    app: express.Application;
+export default class Shows {
+    static initialize(app: Application, prefix: string = '') {
+        app.get(prefix + '/shows/subtitle/:id', Middlewares.auth, this.getSubtitlesForEpisode.bind(this));
+        app.get(prefix + '/shows/play/:show/:season/:episode', Middlewares.auth, this.playEpisode.bind(this));
+        app.get(prefix + '/shows/all', Middlewares.auth, this.getShows.bind(this));
 
-    initialize(app: express.Express, prefix: string = '') {
-        app.get(prefix + '/shows/subtitle/:id', this.getSubtitlesForEpisode.bind(this));
-        app.get(prefix + '/shows/play/:show/:season/:episode', this.playEpisode.bind(this));
-        app.get(prefix + '/shows/all', this.getShows.bind(this));
+        app.get(prefix + '/shows/:show', Middlewares.auth, this.getShow.bind(this));
+        app.get(prefix + '/shows/:show/seasons', Middlewares.auth, this.getSeasons.bind(this));
+        app.get(prefix + '/shows/:show/:season', Middlewares.auth, this.getSeason.bind(this));
+        app.get(prefix + '/shows/:show/:season/episodes', Middlewares.auth, this.getEpisodes.bind(this));
+        app.get(prefix + '/shows/:show/:season/:episode', Middlewares.auth, this.getEpisode.bind(this));
 
-        app.get(prefix + '/shows/:show', this.getShow.bind(this));
-        app.get(prefix + '/shows/:show/seasons', this.getSeasons.bind(this));
-        app.get(prefix + '/shows/:show/:season', this.getSeason.bind(this));
-        app.get(prefix + '/shows/:show/:season/episodes', this.getEpisodes.bind(this));
-        app.get(prefix + '/shows/:show/:season/:episode', this.getEpisode.bind(this));
-
-        app.post(prefix + '/shows/progress', this.saveProgress.bind(this));
+        app.post(prefix + '/shows/progress', Middlewares.auth, this.saveProgress.bind(this));
     }
 
-    private async getShows(_, response: express.Response) {
+    private static async getShows(_, response: Response) {
         console.log('[api] Request received: GET /shows');
 
         try {
@@ -41,7 +40,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getShow(request: express.Request, response: express.Response) {
+    private static async getShow(request: Request, response: Response) {
         const name = request.params.show;
         console.log(`[api] Request received: GET /shows/${name}`);
 
@@ -59,7 +58,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getSeasons(request: express.Request, response: express.Response) {
+    private static async getSeasons(request: Request, response: Response) {
         const show = request.params.show;
         console.log(`[api] Request received: GET /shows/${show}`);
 
@@ -77,7 +76,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getSeason(request: express.Request, response: express.Response) {
+    private static async getSeason(request: Request, response: Response) {
         const show = request.params.show,
             number = parseInt(request.params.season);
 
@@ -104,7 +103,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getEpisodes(request: express.Request, response: express.Response) {
+    private static async getEpisodes(request: Request, response: Response) {
         const show = request.params.show,
             season = parseInt(request.params.season);
 
@@ -123,7 +122,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getEpisode(request: express.Request, response: express.Response) {
+    private static async getEpisode(request: Request, response: Response) {
         const show = request.params.show,
             season = parseInt(request.params.season),
             number = parseInt(request.params.episode);
@@ -133,7 +132,6 @@ export default class Shows extends Base {
         try {
             console.log(StringExtensions.fromKebabCase(show));
             const episode = await EpisodeService.findOne({ season, number, $text: { $search: StringExtensions.fromKebabCase(show) }});
-            // const episode = await EpisodeService.findOne({ show: new RegExp(StringExtensions.escapeForRegEx(show), 'i'), season, number });
             if (!episode)
                 throw new Error('No episode found.');
 
@@ -145,7 +143,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async playEpisode(request: express.Request, response: express.Response) {
+    private static async playEpisode(request: Request, response: Response) {
         const show = request.params.show,
             season = parseInt(request.params.season),
             number = parseInt(request.params.episode);
@@ -157,7 +155,7 @@ export default class Shows extends Base {
             if (!episode)
                 throw new Error('No episode found.');
 
-            this.stream(request, response, episode.path);
+            Video.stream(request, response, episode.path);
         } catch (e) {
             console.error(`[api] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);
@@ -165,7 +163,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async saveProgress(request: express.Request, response: express.Response) {
+    private static async saveProgress(request: Request, response: Response) {
         console.log('[api] Request received: POST /movies/progress', request.body);
 
         try {
@@ -192,7 +190,7 @@ export default class Shows extends Base {
         }
     }
 
-    private async getSubtitlesForEpisode(request: express.Request, response: express.Response) {
+    private static async getSubtitlesForEpisode(request: Request, response: Response) {
         const id = request.params.id;
         console.log(`[api] Request received: GET /shows/subtitle/${id}`);
 

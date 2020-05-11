@@ -224,3 +224,8 @@ export class Castable {
         return castable;
     }
 }
+
+export class User extends Id {
+    email: string;
+    token: string;
+}

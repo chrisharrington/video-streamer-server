@@ -1,6 +1,7 @@
 import * as express from 'express';
 import * as cors from 'cors';
 import * as bodyParser from 'body-parser';
+import * as cookieParser from 'cookie-parser';
 
 import Config from '@root/config';
 
@@ -9,6 +10,7 @@ import Webhook from './webhook';
 import Movies from './api/movies';
 import Shows from './api/shows';
 import Devices from './api/devices';
+import Auth from './api/auth';
 
 export default class Server {
     private port: number;
@@ -19,9 +21,10 @@ export default class Server {
 
     run() {
         const app = express();
-        app.use(cors());
+        app.use(cors({ origin: 'https://www.showveo.com', credentials: true }));
         app.use(this.authorize);
         app.use(bodyParser.json());
+        app.use(cookieParser());
         
         app.listen(this.port, () => console.log(`[api] Listening on port ${this.port}...`));
 
@@ -29,9 +32,10 @@ export default class Server {
         new Webhook().initialize(app);
 
         const prefix = '/data';
-        new Movies().initialize(app, prefix);
-        new Shows().initialize(app, prefix);
-        new Devices().initialize(app, prefix);
+        Movies.initialize(app, prefix);
+        Shows.initialize(app, prefix);
+        Devices.initialize(app, prefix);
+        Auth.initialize(app, prefix);
     }
 
     private authorize(request: express.Request, response: express.Response, next: () => void) {

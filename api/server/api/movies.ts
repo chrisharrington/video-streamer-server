@@ -1,23 +1,24 @@
-import * as express from 'express';
+import { Application, Request, Response } from 'express';
 import * as fs from 'fs';
 
 import MovieService from '@root/data/movie';
 import { Movie } from '@root/models';
+import { StringExtensions } from '@root/extensions';
 
-import Base from './base';
-export default class Movies extends Base {
-    app: express.Application;
+import Video from '@api/server/video';
+import Middlewares from '@api/server/middlewares';
 
-    initialize(app: express.Express, prefix: string = '') {
-        app.get(prefix + '/movies/all', this.getMovies.bind(this));
-        app.post(prefix + '/movies/progress', this.saveProgress.bind(this));
-        app.get(prefix + '/movies/:year/:name', this.getMovieByYearAndName.bind(this));
+export default class Movies {
+    static initialize(app: Application, prefix: string = '') {
+        app.get(prefix + '/movies/all', Middlewares.auth, this.getMovies.bind(this));
+        app.post(prefix + '/movies/progress', Middlewares.auth, this.saveProgress.bind(this));
+        app.get(prefix + '/movies/:year/:name', Middlewares.auth, this.getMovieByYearAndName.bind(this));
 
-        app.get(prefix + '/movies/play/:year/:name', this.playMovie.bind(this));
-        app.get(prefix + '/movies/subtitle/:year/:name', this.getSubtitlesForMovie.bind(this));
+        app.get(prefix + '/movies/play/:year/:name', Middlewares.auth, this.playMovie.bind(this));
+        app.get(prefix + '/movies/subtitle/:year/:name', Middlewares.auth, this.getSubtitlesForMovie.bind(this));
     }
 
-    private async getMovies(_, response: express.Response) {
+    private static async getMovies(_, response: Response) {
         console.log('[api] Request received: GET /movies');
 
         try {
@@ -31,11 +32,11 @@ export default class Movies extends Base {
         }
     }
 
-    private async getMovieByYearAndName(request: express.Request, response: express.Response) {
+    private static async getMovieByYearAndName(request: Request, response: Response) {
         console.log('[api] Request received: GET /movies/:year/:name');
     
         try {
-            let movie = await MovieService.getByYearAndName(parseInt(request.params.year), request.params.name);
+            let movie = await MovieService.getByYearAndName(parseInt(request.params.year), StringExtensions.fromKebabCase(request.params.name));
             console.log(`[api] Request succeeded. GET /movies/:year/:name. Found movie:`, movie.name);
             response.status(200).send(this.sanitize(movie));
         } catch (e) {
@@ -45,7 +46,7 @@ export default class Movies extends Base {
         }
     }
 
-    private async saveProgress(request: express.Request, response: express.Response) {
+    private static async saveProgress(request: Request, response: Response) {
         console.log('[api] Request received: POST /movies/progress', request.body);
 
         try {
@@ -72,22 +73,22 @@ export default class Movies extends Base {
         }
     }
 
-    private sanitize(movie: Movie) : Movie {
+    private static sanitize(movie: Movie) : Movie {
         delete movie.path;
         return movie;
     }
 
-    private async playMovie(request: express.Request, response: express.Response) {
+    private static async playMovie(request: Request, response: Response) {
         console.log('[api] Request received: GET /movies/play/:year/:name', request.params.year, request.params.name, request.headers.range);
 
         try {
-            const movie = await MovieService.getByYearAndName(parseInt(request.params.year), request.params.name);
+            const movie = await MovieService.getByYearAndName(parseInt(request.params.year), StringExtensions.fromKebabCase(request.params.name));
             if (!movie) {
                 console.error(`[api] Movie not found:`, request.params.year, request.params.name);
                 response.sendStatus(404);
             }
 
-            this.stream(request, response, movie.path);
+            Video.stream(request, response, movie.path);
         } catch (e) {
             console.error('[api] Request failed: GET /movies/play/:year/:name');
             console.error(e);
@@ -95,11 +96,11 @@ export default class Movies extends Base {
         }
     }
 
-    private async getSubtitlesForMovie(request: express.Request, response: express.Response) {
+    private static async getSubtitlesForMovie(request: Request, response: Response) {
         console.log(`[api] Request received: GET /movies/subtitle/:year/:name`, request.params.year, request.params.name);
 
         try {
-            const movie = await MovieService.getByYearAndName(parseInt(request.params.year), request.params.name);
+            const movie = await MovieService.getByYearAndName(parseInt(request.params.year), StringExtensions.fromKebabCase(request.params.name));
             if (!movie) {
                 console.error(`[api] Movie not found:`, request.params.year, request.params.name);
                 response.sendStatus(404);

@@ -78,3 +78,7 @@ dist/
 
 # Static image files.
 static/images/
+
+# Secret.json contains sensitive information that shouldn't be checked in.
+secret.ts
+secret.js
