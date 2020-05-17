@@ -229,6 +229,7 @@ export default class Shows {
 
         try {
             Video.abort();
+            response.sendStatus(200);
         } catch (e) {
             console.error(`[api] Request failed: POST /shows/:show/:season/:episode/:device`);
             console.error(e);

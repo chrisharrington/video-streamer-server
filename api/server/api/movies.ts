@@ -126,6 +126,7 @@ export default class Movies {
 
         try {
             Video.abort();
+            response.sendStatus(200);
         } catch (e) {
             console.error(`[api] Request failed: GET /movies/stop/:year/:name/:device`);
             console.error(e);
