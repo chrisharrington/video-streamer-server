@@ -1,5 +1,5 @@
 import * as fetch from 'node-fetch';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import Config from '@root/config';
 import { StringExtensions } from '@root/extensions';

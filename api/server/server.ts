@@ -1,7 +1,7 @@
-import * as express from 'express';
-import * as cors from 'cors';
-import * as bodyParser from 'body-parser';
-import * as cookieParser from 'cookie-parser';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 
 import Config from '@root/config';
 

@@ -11,7 +11,8 @@
           "@indexer/*": ["./indexer/*"],
           "@converter/*": ["./converter/*"]
       },
-      "sourceMap": true
+      "sourceMap": true,
+      "esModuleInterop": true
     },
     "include": [
       "**/*.ts",

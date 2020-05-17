@@ -11,11 +11,13 @@ import Middlewares from '@api/server/middlewares';
 export default class Movies {
     static initialize(app: Application, prefix: string = '') {
         app.get(prefix + '/movies/all', Middlewares.auth, this.getMovies.bind(this));
-        app.post(prefix + '/movies/progress', Middlewares.auth, this.saveProgress.bind(this));
         app.get(prefix + '/movies/:year/:name', Middlewares.auth, this.getMovieByYearAndName.bind(this));
 
         app.get(prefix + '/movies/play/:year/:name', Middlewares.auth, this.playMovie.bind(this));
         app.get(prefix + '/movies/subtitle/:year/:name', Middlewares.auth, this.getSubtitlesForMovie.bind(this));
+
+        app.post(prefix + '/movies/progress', Middlewares.auth, this.saveProgress.bind(this));
+        app.post(prefix + '/movies/stop/:year/:name/:device', Middlewares.auth, this.stop.bind(this));
     }
 
     private static async getMovies(_, response: Response) {
@@ -88,6 +90,7 @@ export default class Movies {
                 response.sendStatus(404);
             }
 
+            // Video.play(request, response, movie.path);
             Video.stream(request, response, movie.path);
         } catch (e) {
             console.error('[api] Request failed: GET /movies/play/:year/:name');
@@ -113,6 +116,18 @@ export default class Movies {
             fs.createReadStream(movie.subtitles).pipe(response);
         } catch (e) {
             console.error(`[api] Request failed: GET /movies/subtitle/:year/:name`);
+            console.error(e);
+            response.sendStatus(500);
+        }
+    }
+
+    private static async stop(request: Request, response: Response) {
+        console.log(`[api] Request received: GET /movies/stop/:year/:name/:device`, request.params.year, request.params.name, request.params.device);
+
+        try {
+            Video.abort();
+        } catch (e) {
+            console.error(`[api] Request failed: GET /movies/stop/:year/:name/:device`);
             console.error(e);
             response.sendStatus(500);
         }

@@ -7,6 +7,7 @@ import EpisodeService from '@root/data/episode';
 
 import Encoder, { EncodingResult } from './encoder';
 
+
 export default class Converter {
     private static converterQueue: Queue = new Queue('converter');
     private static subtitlerQueue: Queue = new Queue('subtitler');
@@ -24,14 +25,16 @@ export default class Converter {
 
             console.log(`[converter] Message received: ${media.path}`);
 
-            const file = new File(media.path, `${path.dirname(media.path)}/${File.getName(media.path)}.mp4`);
-            const result: EncodingResult = await this.encoder.run(file);
+            const location = `${path.dirname(media.path)}/${File.getName(media.path)}.mp4`,
+                file = new File(media.path, location),
+                result: EncodingResult = await this.encoder.run(file);
 
             switch (message.type) {
                 case MessageType.Movie:
                     const movie = media as Movie;
                     movie.conversionStatus = result.conversion === undefined ? Status.Processed : Status.Failed;
                     movie.conversionError = result.conversion === undefined ? null : result.conversion as Error;
+                    movie.path = location;
                     await MovieService.updateOne(movie);
 
                     if (!result.subtitles) {
@@ -44,6 +47,7 @@ export default class Converter {
                     const episode = media as Episode;
                     episode.conversionStatus = result.conversion === undefined ? Status.Processed : Status.Failed;
                     episode.conversionError = result.conversion === undefined ? null : result.conversion as Error;
+                    episode.path = location;
                     await EpisodeService.updateOne(episode);
 
                     if (!result.subtitles) {

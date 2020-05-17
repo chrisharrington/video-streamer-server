@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
 import * as fs from 'fs';
 
+const FfmpegCommand = require('fluent-ffmpeg');
+
 export default class Video {
-    public static stream(request: Request, response: Response, path: string) {
+    private static command: any;
+
+    public static play(request: Request, response: Response, path: string) {
         const stat = fs.statSync(path),
             fileSize = stat.size,
             range = request.headers.range;
@@ -25,5 +29,44 @@ export default class Video {
             });
             fs.createReadStream(path).pipe(response);
         }
+    }
+
+    public static stream(request: Request, response: Response, path: string) {
+        path = '/media/Ad Astra.mp4';
+
+        const stats = fs.statSync(path);
+        response.set('Content-Length', stats.size.toString());
+        response.set('Content-Type', 'video/mp4');
+
+        const command = new FfmpegCommand()
+            .input(path)
+            .inputOptions(
+                '-hwaccel', 'nvdec'
+            )
+            .outputFormat('mp4')
+            .outputOptions(['-movflags faststart', '-frag_size 4096'])
+            .audioCodec('libmp3lame')
+            .videoCodec('h264_nvenc')
+            .outputOptions(
+                '-vsync', '0',
+                '-c:v', 'h264_nvenc',
+                '-acodec', 'libmp3lame',
+                '-b:v', '5M',
+                '-sn',
+                // '-map', '0:' + videoIndex,
+                // '-map', '0:' + audioIndex
+            )
+            .on('error', error => console.log(`[api] Encoding error: ${error.message}`))
+            .on('exit', () => console.log('[api] Encoder exited.'))
+            .on('close',  () => console.log('[api] Encoder closed.'))
+            .on('end', () => console.log('[api] Encoder finished.'));
+
+        command.stream(response, { end: true });
+
+        return this.command = command;
+    }
+
+    public static abort() {
+        this.command.kill('SIGINT');
     }
 }

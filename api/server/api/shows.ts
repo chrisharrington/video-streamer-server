@@ -24,6 +24,7 @@ export default class Shows {
         app.get(prefix + '/shows/:show/:season/:episode', Middlewares.auth, this.getEpisode.bind(this));
 
         app.post(prefix + '/shows/progress', Middlewares.auth, this.saveProgress.bind(this));
+        app.post(prefix + '/shows/:show/:season/:episode/:device', Middlewares.auth, this.stop.bind(this));
     }
 
     private static async getShows(_, response: Response) {
@@ -155,7 +156,7 @@ export default class Shows {
             if (!episode)
                 throw new Error('No episode found.');
 
-            Video.stream(request, response, episode.path);
+            Video.play(request, response, episode.path);
         } catch (e) {
             console.error(`[api] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);
@@ -218,6 +219,18 @@ export default class Shows {
             fs.createReadStream(file).pipe(response);
         } catch (e) {
             console.error(`[server] Request failed: GET /shows/subtitle/${id}`);
+            console.error(e);
+            response.sendStatus(500);
+        }
+    }
+
+    private static async stop(request: Request, response: Response) {
+        console.log(`[api] Request received: POST /shows/:show/:season/:episode/:device`, request.params.show, request.params.season, request.params.episode, request.params.device);
+
+        try {
+            Video.abort();
+        } catch (e) {
+            console.error(`[api] Request failed: POST /shows/:show/:season/:episode/:device`);
             console.error(e);
             response.sendStatus(500);
         }

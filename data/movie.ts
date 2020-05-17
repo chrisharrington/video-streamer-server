@@ -1,5 +1,4 @@
 import { Movie } from '@root/models';
-import { StringExtensions } from '@root/extensions';
 
 import { Base } from './base';
 
