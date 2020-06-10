@@ -1,6 +1,6 @@
 import { Application, Request, Response } from 'express';
 
-import AuthService from '@root/data/auth';
+import AuthService from '@lib/data/auth';
 
 export default class Auth {
     static initialize(app: Application, prefix: string = '') {

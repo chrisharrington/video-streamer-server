@@ -1,18 +1,3 @@
-# FROM node:latest
-# WORKDIR /app
-
-# # RUN apt-get update -y && \
-# #     apt-get install -y libqt4-dev libqt4-xml libxcb-screensaver0 libavahi-compat-libdnssd1 libphonon4 libhunspell-dev libavahi-compat-libdnssd-dev apt-utils build-essential python make g++ avahi-daemon avahi-discover libnss-mdns
-
-# RUN apt-get update -y && \
-#     apt-get install -y libavahi-compat-libdnssd-dev
-
-# EXPOSE 8101
-# CMD npm rebuild mdns && \
-#     service dbus start && \
-#     avahi-daemon --no-rlimits -D && \
-#     yarn api:dev
-
 FROM nvidia/cuda:latest
 WORKDIR /app
 
@@ -24,18 +9,22 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 ENV NVIDIA_DRIVER_CAPABILITIES=video,compute,utility
 ENV NVIDIA_REQUIRE_CUDA=cuda>=8.0
 
-# Install dependencies
+EXPOSE 8101
+
+# Install dependencies.
 RUN apt-get update -y && \
-    apt-get install git nodejs npm wget yasm pkgconf libzvbi-dev libmp3lame-dev libavahi-compat-libdnssd-dev -y && \
+    apt-get install curl git wget yasm pkgconf libzvbi-dev libmp3lame-dev libavahi-compat-libdnssd-dev -y && \
+    curl -sL https://deb.nodesource.com/setup_13.x | bash - && \
+    apt-get install nodejs -y && \
     npm install yarn -g
 
-# Install nv-codec-headers
+# Install nv-codec-headers.
 RUN git clone https://github.com/FFmpeg/nv-codec-headers.git && \
     cd nv-codec-headers && \
     make install && \
     cd ..
 
-# Install FFMPEG
+# Install FFMPEG.
 RUN git clone https://git.ffmpeg.org/ffmpeg.git && \
     cd ffmpeg && \
     ./configure --enable-libzvbi --enable-libmp3lame --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && \
@@ -43,7 +32,7 @@ RUN git clone https://git.ffmpeg.org/ffmpeg.git && \
     make install && \
     cd ..
 
-# Launcht the API.
+# Launch the API.
 CMD npm rebuild mdns && \
     service dbus start && \
     avahi-daemon --no-rlimits -D && \

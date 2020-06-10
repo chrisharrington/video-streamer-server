@@ -2,7 +2,7 @@ import * as fetch from 'node-fetch';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 
-import Config from '@root/config';
+import Config from '@lib/config';
 
 const unique = require('unique-string');
 

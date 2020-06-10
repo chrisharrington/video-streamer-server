@@ -3,8 +3,8 @@ import * as ffprobe from 'ffprobe';
 import * as path from 'path';
 import * as srt2vtt from 'srt-to-vtt';
 
-import { File, FileState, StreamType } from '@root/models';
-import { convertingFileName } from '@root/constants';
+import { File, FileState, StreamType } from '@lib/models';
+import { convertingFileName } from '@lib/constants';
 
 const FfmpegCommand = require('fluent-ffmpeg');
 

@@ -1,10 +1,10 @@
-import Queue from '@root/queue';
-import { Message, MessageType, Movie, Status, Show, Season, Episode } from '@root/models';
+import { Message, MessageType, Movie, Status, Show, Season, Episode } from '@lib/models';
 
-import MovieService from '@root/data/movie';
-import ShowService from '@root/data/show';
-import SeasonService from '@root/data/season';
-import EpisodeService from '@root/data/episode';
+import Queue from '@lib/queue';
+import MovieService from '@lib/data/movie';
+import ShowService from '@lib/data/show';
+import SeasonService from '@lib/data/season';
+import EpisodeService from '@lib/data/episode';
 
 import MovieMetadata from './movie';
 import TvMetadata from './tv';
@@ -30,7 +30,7 @@ export default class Metadata {
                     break;
                 case MessageType.Episode:
                     await this.handleEpisode(message.payload as Episode);
-                    break;
+                    break; 
                 default:
                     throw new Error(`Message type "${message.type}" corresponds to no handler.`);
             }

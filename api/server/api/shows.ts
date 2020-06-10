@@ -2,11 +2,11 @@ import { Application, Request, Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import ShowService from '@root/data/show';
-import SeasonService from '@root/data/season';
-import EpisodeService from '@root/data/episode';
-import { Episode, Status } from '@root/models';
-import { StringExtensions } from '@root/extensions';
+import ShowService from '@lib/data/show';
+import SeasonService from '@lib/data/season';
+import EpisodeService from '@lib/data/episode';
+import { Episode, Status } from '@lib/models';
+import { StringExtensions } from '@lib/extensions';
 
 import Video from '@api/server/video';
 import Middlewares from '@api/server/middlewares';

@@ -34,7 +34,6 @@ services:
       - ~/media:/media
       - ./:/app
     depends_on:
-      - queue
       - database
     ports:
       - 9000:9000

@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { convertingFileName, videoExtensions } from '@root/constants';
+import { convertingFileName, videoExtensions } from '@lib/constants';
 import Config from './config';
 
 export class Id {

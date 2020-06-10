@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import AuthService from '@root/data/auth';
+import AuthService from '@lib/data/auth';
 
 export default class Middlewares {
     public static async auth(request: Request, response: Response, next: any) {

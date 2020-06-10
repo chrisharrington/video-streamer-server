@@ -1,6 +1,6 @@
 import { Collection } from 'mongodb';
 
-import { Show, Season } from '@root/models';
+import { Show, Season } from '@lib/models';
 
 import { Base } from './base';
 

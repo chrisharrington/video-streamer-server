@@ -1,8 +1,8 @@
 import * as fetch from 'node-fetch';
 
-import Config from '@root/config';
-import { Movie } from '@root/models';
-import { StringExtensions } from '@root/extensions';
+import Config from '@lib/config';
+import { Movie } from '@lib/models';
+import { StringExtensions } from '@lib/extensions';
 
 import Downloader from './downloader';
 import Metadata from './base';

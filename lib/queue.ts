@@ -1,7 +1,7 @@
 import * as amqp from 'amqplib';
 
-import Config from '@root/config';
-import { Message } from '@root/models';
+import Config from '@lib/config';
+import { Message } from '@lib/models';
 
 export default class Queue {
     channel: amqp.Channel;
@@ -54,17 +54,42 @@ export default class Queue {
     }
 
     private async initialize(queue: string) : Promise<void> {
-        const connection = await amqp.connect(Config.queueConnectionString),
-            channel = await connection.createChannel();
+        let count = 0, max = 10, connected = false;
 
-        await Promise.all([queue, queue + '-error'].map((q: string) => channel.assertQueue(q, { durable: true })));
-        this.channel = channel;
-        this.channel.prefetch(1);
+        while (count++ < max && !connected) {
+            const error = await this.connect(queue);
+            connected = !error;
+            if (error && count === max)
+                throw error;
+            else if (error)
+                await this.wait(1000);
+        }
+    }
+
+    private async connect(queue: string) : Promise<Error | null> {
+        try {
+            const connection = await amqp.connect(Config.queueConnectionString),
+                channel = await connection.createChannel();
+
+            await Promise.all([queue, queue + '-error'].map((q: string) => channel.assertQueue(q, { durable: true })));
+            this.channel = channel;
+            this.channel.prefetch(1);
+
+            return null;
+        } catch (e) {
+            return e;
+        }
     }
 
     private async delay(milliseconds: number) {
         return new Promise(resolve => {
             setTimeout(resolve, milliseconds);
+        });
+    }
+
+    private async wait(milliseconds: number) : Promise<void> {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), milliseconds);
         });
     }
 }

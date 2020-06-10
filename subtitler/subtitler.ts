@@ -5,11 +5,11 @@ import * as fetch from 'node-fetch';
 import * as zlib from 'zlib';
 import * as srt2vtt from 'srt-to-vtt';
 
-import Config from '@root/config';
-import Queue from '@root/queue';
-import MovieService from '@root/data/movie';
-import EpisodeService from '@root/data/episode';
-import { Media, Movie, Episode, Status, Message, MessageType, File } from '@root/models';
+import Config from '@lib/config';
+import Queue from '@lib/queue';
+import MovieService from '@lib/data/movie';
+import EpisodeService from '@lib/data/episode';
+import { Media, Movie, Episode, Status, Message, MessageType, File } from '@lib/models';
 
 export class Subtitler {
     private static api: OpenSubtitles;

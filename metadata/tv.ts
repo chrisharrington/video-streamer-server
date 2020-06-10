@@ -1,9 +1,9 @@
 import * as fetch from 'node-fetch';
 import dayjs from 'dayjs';
 
-import Config from '@root/config';
-import { StringExtensions } from '@root/extensions';
-import { Show, Season, Episode } from '@root/models';
+import Config from '@lib/config';
+import { StringExtensions } from '@lib/extensions';
+import { Show, Season, Episode } from '@lib/models';
 
 import Downloader from './downloader';
 import Metadata from './base';

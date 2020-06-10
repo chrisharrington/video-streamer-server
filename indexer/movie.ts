@@ -1,11 +1,11 @@
 import getVideoDuration from 'get-video-duration';
 import * as fs from 'fs';
 
-import Files from '@root/files';
-import MovieService from '@root/data/movie';
-import { Movie, File, FileState, Status, MessageType, Message } from '@root/models';
-import { Watcher, WatcherEvent } from '@root/watcher';
-import Queue from '@root/queue';
+import Files from '@lib/files';
+import MovieService from '@lib/data/movie';
+import { Movie, File, FileState, Status, MessageType, Message } from '@lib/models';
+import { Watcher, WatcherEvent } from '@lib/watcher';
+import Queue from '@lib/queue';
 
 export class MovieIndexer {
     paths: string[];

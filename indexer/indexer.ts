@@ -1,7 +1,7 @@
 import { MovieIndexer } from './movie';
 import { TvIndexer } from './tv';
 
-import Queue from '@root/queue';
+import Queue from '@lib/queue';
 
 export default class Indexer {
     static async initialize() {

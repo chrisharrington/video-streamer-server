@@ -1,6 +1,6 @@
 import 'module-alias/register';
 
-import Config from '@root/config';
+import Config from '@lib/config';
 import Server from '@api/server/server';
 
 if (!Config.enabled.api) {

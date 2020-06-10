@@ -1,9 +1,9 @@
 import * as path from 'path';
 
-import Queue from '@root/queue';
-import { File, Message, MessageType, Movie, Status, Media, Episode } from '@root/models';
-import MovieService from '@root/data/movie';
-import EpisodeService from '@root/data/episode';
+import Queue from '@lib/queue';
+import { File, Message, MessageType, Movie, Status, Media, Episode } from '@lib/models';
+import MovieService from '@lib/data/movie';
+import EpisodeService from '@lib/data/episode';
 
 import Encoder, { EncodingResult } from './encoder';
 

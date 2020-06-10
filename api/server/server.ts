@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 
-import Config from '@root/config';
+import Config from '@lib/config';
 
 import Chat from './chat';
 import Webhook from './webhook';

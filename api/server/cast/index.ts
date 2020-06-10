@@ -15,6 +15,8 @@ class Cast {
     private deviceMap: DeviceMap;
 
     constructor() {
+        console.log('[api] Initializing cast devices.');
+
         var browser = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: [
             mdns.rst.DNSServiceResolve(),
             'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),

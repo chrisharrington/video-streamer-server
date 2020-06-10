@@ -1,8 +1,8 @@
-import { User } from '@root/models';
+import { User } from '@lib/models';
 
 import { Base } from './base';
 
-import Secret from '@root/secret';
+import Secret from '@lib/secret';
 
 class AuthService extends Base<User> {
     constructor() {

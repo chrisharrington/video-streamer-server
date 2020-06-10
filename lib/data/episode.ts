@@ -1,4 +1,4 @@
-import { Episode } from '@root/models';
+import { Episode } from '@lib/models';
 
 import { Base } from './base';
 

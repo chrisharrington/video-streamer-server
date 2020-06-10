@@ -1,6 +1,6 @@
 import watch from 'node-watch';
 
-import { File } from '@root/models';
+import { File } from '@lib/models';
 
 export enum WatcherEvent {
     Update = 'update',
@@ -30,7 +30,7 @@ export class Watcher {
 // import watch from 'node-watch';
 // import * as chokidar from 'chokidar';
 
-// import { File } from '@root/models';
+// import { File } from '@lib/models';
 
 // export enum WatcherEvent {
 //     Add = 'add',

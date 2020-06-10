@@ -32,7 +32,7 @@ export default class Video {
     }
 
     public static stream(request: Request, response: Response, path: string) {
-        path = '/media/Ad Astra.mp4';
+        this.abort();
 
         const stats = fs.statSync(path);
         response.set('Content-Length', stats.size.toString());
@@ -43,6 +43,7 @@ export default class Video {
             .inputOptions(
                 '-hwaccel', 'nvdec'
             )
+            .seekInput(request.query.seek || 0)
             .outputFormat('mp4')
             .outputOptions(['-movflags faststart', '-frag_size 4096'])
             .audioCodec('libmp3lame')
@@ -67,6 +68,9 @@ export default class Video {
     }
 
     public static abort() {
-        this.command.kill('SIGINT');
+        if (this.command) {
+            this.command.kill('SIGINT');
+            this.command = null;
+        }
     }
 }

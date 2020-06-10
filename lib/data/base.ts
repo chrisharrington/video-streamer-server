@@ -1,7 +1,7 @@
 import { Collection, MongoClient, ObjectID, ObjectId } from 'mongodb';
 
-import Config from '@root/config';
-import { Id } from '@root/models';
+import Config from '@lib/config';
+import { Id } from '@lib/models';
 
 export class Base<TModel> {
     private connectionString: string;

@@ -1,6 +1,6 @@
 import { Client, DefaultMediaReceiver } from 'castv2-client';
 
-import { Castable } from '@root/models';
+import { Castable } from '@lib/models';
 
 interface Application {
     play: () => void;
@@ -51,7 +51,7 @@ export default class Device {
 
                     player.on('error', reject);
 
-                    player.load(message, { autoplay: true }, (error, status) => {
+                    player.load(message, { autoplay: true }, error => {
                         if (error)
                             console.error(error);
 

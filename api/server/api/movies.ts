@@ -1,9 +1,9 @@
 import { Application, Request, Response } from 'express';
 import * as fs from 'fs';
 
-import MovieService from '@root/data/movie';
-import { Movie } from '@root/models';
-import { StringExtensions } from '@root/extensions';
+import MovieService from '@lib/data/movie';
+import { Movie } from '@lib/models';
+import { StringExtensions } from '@lib/extensions';
 
 import Video from '@api/server/video';
 import Middlewares from '@api/server/middlewares';

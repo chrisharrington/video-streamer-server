@@ -1,4 +1,4 @@
-import { Movie } from '@root/models';
+import { Movie } from '@lib/models';
 
 import { Base } from './base';
 

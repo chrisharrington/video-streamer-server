@@ -5,16 +5,17 @@
   "main": "app.js",
   "scripts": {
     "typecheck": "./node_modules/.bin/tsc",
+    "watch": "./node_modules/.bin/nodemon --watch './**/*.ts' --exec './node_modules/.bin/ts-node' ./metadata/app.ts",
     "api": "./node_modules/.bin/tsc && node api/app.js",
-    "api:dev": "./node_modules/.bin/tsc-watch --onSuccess \"node --inspect=0.0.0.0:9000 ./api/app.js\"",
+    "api:dev": "./node_modules/.bin/ts-node-dev --watch lib,api ./api/app.ts",
     "indexer": "./node_modules/.bin/tsc && node indexer/app.js",
-    "indexer:dev": "./node_modules/.bin/tsc-watch --onSuccess \"node --inspect=0.0.0.0:9001 ./indexer/app.js\"",
+    "indexer:dev": "./node_modules/.bin/ts-node-dev --watch lib,indexer ./indexer/app.ts",
     "converter": "./node_modules/.bin/tsc && node converter/app.js",
-    "converter:dev": "./node_modules/.bin/tsc-watch --onSuccess \"node --inspect=0.0.0.0:9002 ./converter/app.js\"",
+    "converter:dev": "./node_modules/.bin/ts-node-dev --watch lib,converter ./converter/app.ts",
     "metadata": "./node_modules/.bin/tsc && node metadata/app.js",
-    "metadata:dev": "./node_modules/.bin/tsc-watch --onSuccess \"node --inspect=0.0.0.0:9003 ./metadata/app.js\"",
+    "metadata:dev": "./node_modules/.bin/ts-node-dev --watch lib,metadata ./metadata/app.ts",
     "subtitler": "./node_modules/.bin/tsc && node subtitler/app.js",
-    "subtitler:dev": "./node_modules/.bin/tsc-watch --onSuccess \"node --inspect=0.0.0.0:9004 ./subtitler/app.js\""
+    "subtitler:dev": "./node_modules/.bin/ts-node-dev --respawn ./subtitler/app.ts"
   },
   "repository": {
     "type": "git",
@@ -28,6 +29,7 @@
   "homepage": "https://github.com/chrisharrington/video-streamer-server#readme",
   "_moduleAliases": {
     "@root": "./",
+    "@lib": "./lib/",
     "@api": "./api/",
     "@indexer": "./indexer/",
     "@converter": "./converter/",
@@ -48,9 +50,9 @@
     "express": "^4.16.3",
     "ffprobe": "^1.1.0",
     "fluent-ffmpeg": "^2.1.2",
-    "get-video-duration": "^1.0.3",
+    "get-video-duration": "^3.0.0-beta.1",
     "history": "^4.10.1",
-    "install": "^0.12.1",
+    "install": "^0.13.0",
     "mdns": "^2.5.1",
     "module-alias": "^2.1.0",
     "mongodb": "^3.3.3",
@@ -66,7 +68,7 @@
     "stream-transcoder": "^0.0.5",
     "string-similarity": "^4.0.1",
     "unique-string": "^2.0.0",
-    "uuid": "^3.3.2",
+    "uuid": "^8.1.0",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
@@ -74,11 +76,16 @@
     "@types/express": "^4.16.0",
     "@types/fluent-ffmpeg": "^2.1.14",
     "@types/mongodb": "^3.1.4",
-    "@types/node": "^12.11.1",
+    "@types/node": "^14.0.13",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
-    "nodemon": "^1.19.4",
-    "tsc-watch": "^4.2.5",
-    "typescript": "^3.9.2"
+    "concurrently": "^5.2.0",
+    "nodemon": "^2.0.4",
+    "ts-loader": "^7.0.4",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "tsc-watch": "^4.2.7",
+    "typescript": "3.9.5",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   }
 }

@@ -1,6 +1,6 @@
 import * as recursive from 'recursive-readdir';
 
-import { File } from '@root/models';
+import { File } from '@lib/models';
 
 export default class Files {
     private filter: (file: File) => boolean;

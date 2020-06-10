@@ -1,9 +1,10 @@
 import { Express, Request, Response } from 'express';
 
-import Cast from '@root/api/cast';
-import Device from '@root/api/cast/device';
-import Movies from '@root/data/movie';
-import { Castable } from '@root/models';
+import Movies from '@lib/data/movie';
+import { Castable } from '@lib/models';
+
+import Cast from '@api/server/cast';
+import Device from '@api/server/cast/device';
 
 const stringSimilarity = require('string-similarity');
 

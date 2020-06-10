@@ -1,6 +1,6 @@
 import * as fetch from 'node-fetch';
 
-import Config from '@root/config';
+import Config from '@lib/config';
 
 interface Configuration {
     base_url: string;
