@@ -1,4 +1,4 @@
-import * as recursive from 'recursive-readdir';
+const recursive = require('recursive-readdir');
 
 import { File } from '@lib/models';
 

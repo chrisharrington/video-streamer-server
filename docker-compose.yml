@@ -1,6 +1,19 @@
 version: '2.3'
 services:
 
+  transpiler:
+    build:
+      context: .
+      dockerfile: ./transpiler/Dockerfile
+    container_name: showveo-transpiler
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    logging:
+      options:
+        max-file: '3'
+        max-size: '1m'
+
   queue:
     image: rabbitmq:3-management
     container_name: showveo-queue
@@ -25,6 +38,7 @@ services:
       context: .
       dockerfile: ./api/Dockerfile
     container_name: showveo-api
+    network_mode: host
     restart: unless-stopped
     runtime: nvidia
     environment:
@@ -35,6 +49,7 @@ services:
       - ./:/app
     depends_on:
       - database
+      - transpiler
     ports:
       - 9000:9000
       - 12000:12000
@@ -51,6 +66,7 @@ services:
     depends_on:
       - queue
       - database
+      - transpiler
     ports:
       - 9001:9001
 
@@ -70,6 +86,7 @@ services:
 #     depends_on:
 #       - queue
 #       - database
+#       - transpiler
 #     ports:
 #       - 9002:9002
 
@@ -85,6 +102,7 @@ services:
     depends_on:
       - queue
       - database
+      - transpiler
     ports:
       - 9003:9003
 
@@ -100,6 +118,7 @@ services:
     depends_on:
       - queue
       - database
+      - transpiler
     ports:
       - 9004:9004
   

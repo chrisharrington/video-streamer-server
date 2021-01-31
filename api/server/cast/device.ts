@@ -33,7 +33,7 @@ export default class Device {
             client.connect(this.host, () => {
                 client.launch(DefaultMediaReceiver, (error, player) => {
                     if (error)
-                        throw new Error(error);
+                        throw new Error(error);       
 
                     const message = {
                         contentId: castable.url,

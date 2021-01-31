@@ -10,14 +10,14 @@ interface DeviceMap {
     [name: string] : Device;
 }
 
-class Cast {
-    private initialized: Promise<void>;
-    private deviceMap: DeviceMap;
+export default class Cast {
+    private static initialized: Promise<void>;
+    private static deviceMap: DeviceMap;
 
-    constructor() {
+    static initialize() {
         console.log('[api] Initializing cast devices.');
 
-        var browser = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: [
+        const browser = mdns.createBrowser(mdns.tcp('googlecast'), { resolverSequence: [
             mdns.rst.DNSServiceResolve(),
             'DNSServiceGetAddrInfo' in mdns.dns_sd ? mdns.rst.DNSServiceGetAddrInfo() : mdns.rst.getaddrinfo({ families: [0] }),
             mdns.rst.makeAddressesUnique()
@@ -52,10 +52,8 @@ class Cast {
         browser.start();
     }
 
-    async devices() : Promise<Device[]> {
+    static async devices() : Promise<Device[]> {
         await this.initialized;
         return Object.values(this.deviceMap).sort((first: Device, second: Device) => first.name.localeCompare(second.name));
     }
 }
-
-export default new Cast();

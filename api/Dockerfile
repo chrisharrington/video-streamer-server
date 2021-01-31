@@ -14,7 +14,7 @@ EXPOSE 8101
 # Install dependencies.
 RUN apt-get update -y && \
     apt-get install curl git wget yasm pkgconf libzvbi-dev libmp3lame-dev libavahi-compat-libdnssd-dev -y && \
-    curl -sL https://deb.nodesource.com/setup_13.x | bash - && \
+    curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
     apt-get install nodejs -y && \
     npm install yarn -g
 

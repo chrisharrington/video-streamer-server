@@ -156,7 +156,8 @@ export default class Shows {
             if (!episode)
                 throw new Error('No episode found.');
 
-            Video.play(request, response, episode.path);
+            // Video.play(request, response, episode.path);
+            Video.stream(request, response, episode.path);
         } catch (e) {
             console.error(`[api] Request failed: GET /shows/${show}/${season}/${number}`);
             console.error(e);

@@ -35,7 +35,7 @@ export default class Video {
         this.abort();
 
         const stats = fs.statSync(path);
-        response.set('Content-Length', stats.size.toString());
+        // response.set('Content-Length', stats.size.toString());
         response.set('Content-Type', 'video/mp4');
 
         const command = new FfmpegCommand()
@@ -45,7 +45,7 @@ export default class Video {
             )
             .seekInput(request.query.seek || 0)
             .outputFormat('mp4')
-            .outputOptions(['-movflags faststart', '-frag_size 4096'])
+            .outputOptions(['-movflags frag_keyframe+empty_moov+faststart', '-frag_size 4096'])
             .audioCodec('libmp3lame')
             .videoCodec('h264_nvenc')
             .outputOptions(
@@ -53,18 +53,17 @@ export default class Video {
                 '-c:v', 'h264_nvenc',
                 '-acodec', 'libmp3lame',
                 '-b:v', '5M',
-                '-sn',
-                // '-map', '0:' + videoIndex,
-                // '-map', '0:' + audioIndex
+                '-sn'
             )
             .on('error', error => console.log(`[api] Encoding error: ${error.message}`))
             .on('exit', () => console.log('[api] Encoder exited.'))
             .on('close',  () => console.log('[api] Encoder closed.'))
-            .on('end', () => console.log('[api] Encoder finished.'));
+            .on('end', () => console.log('[api] Encoder finished.'))
+            .on('stderr', line => console.log(line));
 
         command.stream(response, { end: true });
 
-        return this.command = command;
+        this.command = command;
     }
 
     public static abort() {

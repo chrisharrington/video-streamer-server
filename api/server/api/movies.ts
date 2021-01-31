@@ -84,10 +84,11 @@ export default class Movies {
         console.log('[api] Request received: GET /movies/play/:year/:name', request.params.year, request.params.name, request.headers.range);
 
         try {
+            const name = StringExtensions.fromKebabCase(request.params.name);
             const movie = await MovieService.getByYearAndName(parseInt(request.params.year), StringExtensions.fromKebabCase(request.params.name));
             if (!movie) {
                 console.error(`[api] Movie not found:`, request.params.year, request.params.name);
-                response.sendStatus(404);
+                response.sendStatus(404); 
             }
 
             // Video.play(request, response, movie.path);

@@ -1,9 +1,9 @@
 import * as fetch from 'node-fetch';
 import * as fs from 'fs';
-import * as sharp from 'sharp';
 
 import Config from '@lib/config';
 
+const sharp = require('sharp');
 const unique = require('unique-string');
 
 const WIDTH = 500;

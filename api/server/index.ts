@@ -11,6 +11,7 @@ import Movies from './api/movies';
 import Shows from './api/shows';
 import Devices from './api/devices';
 import Auth from './api/auth';
+import Cast from './cast';
 
 export default class Server {
     private port: number;
@@ -22,7 +23,7 @@ export default class Server {
     run() {
         const app = express();
         app.use(cors({ origin: 'https://www.showveo.com', credentials: true }));
-        app.use(this.authorize);
+        // app.use(this.authorize);
         app.use(bodyParser.json());
         app.use(cookieParser());
         
@@ -36,6 +37,8 @@ export default class Server {
         Shows.initialize(app, prefix);
         Devices.initialize(app, prefix);
         Auth.initialize(app, prefix);
+
+        Cast.initialize();
     }
 
     private authorize(request: express.Request, response: express.Response, next: () => void) {
